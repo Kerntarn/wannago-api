@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 //what pattern will the data be saved in db
 export type PlaceDocument = HydratedDocument<Place>;
-
 @Schema()
 export class Place {
   @Prop( { required: true } )
