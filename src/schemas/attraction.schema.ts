@@ -6,7 +6,7 @@ export type attractionDocument = HydratedDocument<Attraction>;
 
 @Schema()
 export class Attraction extends Place {
-    @Prop( { required: true, type: mongoose.Schema.Types.ObjectId} )
+    @Prop( { required: true, type: mongoose.Schema.Types.ObjectId, ref: Place.name} )
     placeId: ObjectId;
 
     @Prop()

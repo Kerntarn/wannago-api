@@ -16,7 +16,7 @@ export class Place {
   @Prop( { type: String } )
   description: string;
 
-  @Prop( { required: true} )
+  @Prop( { required: true, enum: ['accommodation', 'attraction', 'restaurant'] } )
   type: string;
 
   @Prop() //required ObjectId in the future
