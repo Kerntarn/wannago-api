@@ -86,7 +86,3 @@ export class CreateTransactionDto {
       @IsNotEmpty()
       userId!: string; 
 }
-
-export class UpdateTransactionDto {}
-
-
