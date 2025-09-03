@@ -5,17 +5,14 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 export type accommodationDocument = HydratedDocument<Accommodation>;
 
 @Schema()
-export class Accommodation extends Place {
-    @Prop( { required: true, type: mongoose.Schema.Types.ObjectId, ref: Place.name} )
-    placeId: ObjectId;
-
-    @Prop( { type: [String] } )
+export class Accommodation extends Place{
+    @Prop( { required: true, type: [String] } )
     facilities: string[];
     
-    @Prop()
+    @Prop( { required: true})
     starRating: number;
 
-    @Prop()
+    @Prop( { required: true})
     redirectUrl: string;
 
 }

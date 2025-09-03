@@ -1,39 +1,61 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreatePlaceDto } from 'src/dtos/place.dto';
-import { UpdatePlaceDto } from 'src/dtos/place.dto';
-import { Accommodation, accommodationDocument } from 'src/schemas/accommodation.schema';
-import { Attraction, attractionDocument } from 'src/schemas/attraction.schema';
+import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
-import { Restaurant, RestaurantDocument } from 'src/schemas/restaurant.schema';
 
 @Injectable()
 export class PlacesService {
-  constructor(@InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
-              @InjectModel(Accommodation.name) private accomModel: Model<accommodationDocument>,
-              @InjectModel(Attraction.name) private attraModel: Model<attractionDocument>,
-              @InjectModel(Restaurant.name) private restauModel: Model<RestaurantDocument>,) {}
+  constructor(@InjectModel(Place.name) private placeModel: Model<PlaceDocument>) {}
 
-  create(createPlaceDto: CreatePlaceDto): Promise<Place> {
+  async create(data: any, type: string): Promise<Place> {
     const currentUserId = "001";
-    const createdPlace = new this.placeModel({ ...createPlaceDto, providerId: currentUserId });
-    return createdPlace.save();
+    const place = new this.placeModel({ ...data, providerId: currentUserId, type: type});
+    return place.save();
   }
 
-  findAll(): Promise<Place[]> {
-    return this.placeModel.find().exec();
+  async findAll(type?: string): Promise<Place[]> {
+    let places: Place[];
+    if (type) {
+      places = await this.placeModel.find({ type: type}).exec();
+    } else{
+      places = await this.placeModel.find().exec();
+    }
+    if (places.length === 0) {
+      throw new NotFoundException('No places found');
+    }
+
+    return places;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} place`;
+  findOne(id: string) {
+    return this.placeModel.findById(id).exec();
   }
 
-  update(id: number, updatePlaceDto: UpdatePlaceDto) {
-    return `This action updates a #${id} place`;
+  async update(id: string, data: any, type: string) {
+    const currentUserId = "001";
+    const place = await this.placeModel.findById(id).exec();
+    if (!place) {
+      throw new NotFoundException(`Place with ID ${id} not found`);
+    }
+    if (place.providerId !== currentUserId) {
+      throw new UnauthorizedException('You are not authorized to update this place');
+    }
+    if (place["type"] !== type) {
+      throw new BadRequestException(`This endpoint does not support updating place of type ${place["type"]}`);
+    }
+
+    place.set({ ...data});
+    return place.save();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} place`;
+  async remove(id: string) {
+    const currentUserId = "001";
+    const deleted = await this.placeModel.findOneAndDelete({ _id: id, providerId: currentUserId}).exec();
+    if (!deleted) {
+      throw new NotFoundException(`Place with ID ${id} not found or not owned by user`);
+    }
   }
+
+  
 }

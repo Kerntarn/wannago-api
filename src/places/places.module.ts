@@ -8,12 +8,17 @@ import { Attraction, AttractionSchema } from 'src/schemas/attraction.schema';
 import { Restaurant, RestaurantSchema } from 'src/schemas/restaurant.schema';
 
 @Module({
-  imports: [MongooseModule.forFeature([
-    { name: Place.name, schema: PlaceSchema },
-    { name: Accommodation.name, schema: AccommodationSchema },
-    { name: Attraction.name, schema: AttractionSchema },
-    { name: Restaurant.name, schema: RestaurantSchema },
-    ]),],
+  imports: [MongooseModule.forFeatureAsync([
+    {
+    name: Place.name, 
+    useFactory: () => {
+      const schema = PlaceSchema;
+      schema.discriminator(Accommodation.name, AccommodationSchema);
+      schema.discriminator(Attraction.name, AttractionSchema);
+      schema.discriminator(Restaurant.name, RestaurantSchema);
+      return schema;
+    }
+  }])],
   controllers: [PlacesController],
   providers: [PlacesService],
 })

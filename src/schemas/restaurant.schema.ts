@@ -5,20 +5,17 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 export type RestaurantDocument = HydratedDocument<Restaurant>;
 
 @Schema()
-export class Restaurant extends Place {
-    @Prop( { required: true, type: mongoose.Schema.Types.ObjectId, ref: Place.name} )
-    placeId: ObjectId;
-
-    @Prop()
+export class Restaurant extends Place{
+    @Prop( { required: true})
     openingHours: string;
 
-    @Prop()
+    @Prop( { required: true})
     closingHours: string;
      
-    @Prop()
+    @Prop( { required: true})
     cuisineType: string;
      
-    @Prop()
+    @Prop( { required: true})
     contactInfo: string;
      
 }

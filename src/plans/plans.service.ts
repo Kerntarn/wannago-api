@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePlanDto } from 'src/dtos/plan.dto';
-import { UpdatePlanDto } from 'src/dtos/plan.dto';
+import { CreatePlanDto } from 'src/plans/plan.dto';
+import { UpdatePlanDto } from 'src/plans/plan.dto';
 
 @Injectable()
 export class PlansService {
