@@ -5,7 +5,7 @@ import { TransactionController } from './transaction.controller';
 import { Transaction, TransactionSchema } from 'src/schemas/transaction.schema';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Transaction.name, schema: TransactionSchema }]),],
+  imports: [MongooseModule.forFeature([{ name: Transaction.name, schema: TransactionSchema }])],
   controllers: [TransactionController],
   providers: [TransactionService],
 })
