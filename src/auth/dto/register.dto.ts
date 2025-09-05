@@ -1,19 +1,45 @@
-import { IsNotEmpty, MinLength } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { IsEmail, IsString, Length, MinLength, IsOptional, IsPhoneNumber } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Match } from '../../decorators/match.decorator';
 
 export class RegisterDto {
     @ApiProperty()
-    @IsNotEmpty()
-    name: string;
+    @IsEmail()
+    email: string;
 
-    @ApiProperty()
-    @IsNotEmpty()
+    @ApiProperty({ minLength: 8 })
+    @IsString()
     @MinLength(8)
     password: string;
 
-    @ApiProperty()
-    @IsNotEmpty()
+    @ApiProperty({ minLength: 2, maxLength: 50 })
+    @IsString()
+    @Length(2, 50)
+    firstName: string;
+
+    @ApiProperty({ minLength: 2, maxLength: 50 })
+    @IsString()
+    @Length(2, 50)
+    lastName: string;
+
+    @ApiProperty({ minLength: 3, maxLength: 30 })
+    @IsString()
+    @Length(3, 30)
+    userName: string;
+
+    @ApiProperty({ minLength: 8 })
+    @IsString()
+    @MinLength(8)
     @Match('password', { message: 'Passwords do not match' })
     confirmPassword: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    profileImage?: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsPhoneNumber()
+    phoneNumber?: string;
 }
