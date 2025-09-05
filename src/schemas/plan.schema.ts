@@ -27,8 +27,8 @@ export class Plan{
     @Prop( {required: true})
     groupSize: number;
     
-    @Prop( {required: true, type: mongoose.Schema.Types.ObjectId})
-    ownerId: ObjectId;
+    @Prop( {required: true })
+    ownerId: string;
 
 }
 

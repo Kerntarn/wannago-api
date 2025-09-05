@@ -10,7 +10,8 @@ export class PlansService {
   constructor(@InjectModel(Plan.name) private planModel: Model<planDocument>) {}
 
   create(createPlanDto: CreatePlanDto) {
-    const newPlan = new this.planModel(createPlanDto);
+    const currentUserId = "002";
+    const newPlan = new this.planModel({ ...createPlanDto, ownerId: currentUserId});
     return newPlan.save();
   }
 
