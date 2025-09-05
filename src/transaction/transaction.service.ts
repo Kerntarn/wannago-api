@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { UpdateTransactionDto } from './dtos/update-transaction.dto';
-import { Transaction, TransactionDocument } from 'src/schemas/transaction.schema';
+import { Transaction, TransactionDocument } from '../schemas/transaction.schema';
 import { TransactionMessages } from './transaction.asset';
 
 @Injectable()

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreatePlaceDto } from 'src/dtos/place.dto';
-import { UpdatePlaceDto } from 'src/dtos/place.dto';
-import { Place, PlaceDocument } from 'src/schemas/place.schema';
+import { CreatePlaceDto } from '../dtos/place.dto';
+import { UpdatePlaceDto } from '../dtos/place.dto';
+import { Place, PlaceDocument } from '../schemas/place.schema';
 
 @Injectable()
 export class PlacesService {
