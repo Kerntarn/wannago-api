@@ -29,14 +29,14 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.6",
     "@nestjs/swagger": "^11.2.0",
-<<<<<<< HEAD
+
     "bcrypt": "^6.0.0",
     "class-validator": "^0.14.2",
     "jsonwebtoken": "^9.0.2",
-=======
+
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
->>>>>>> 98efecf09a10fa6b38428164bd0bb36600b8d72b
+
     "mongoose": "^8.18.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
