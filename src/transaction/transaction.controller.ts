@@ -18,7 +18,7 @@ export class TransactionController {
     };
   }
 
-  @Patch('accept/:id')
+  @Patch('accept-transaction/:id')
   async acceptTransaction(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
     const { status, payDate } = updateTransactionDto;
     const transUpdatedStatus = await this.transactionService.update(id, { status, payDate });
