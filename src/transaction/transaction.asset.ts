@@ -12,3 +12,17 @@ export const TransactionMessages = {
   INVALID_TRANSACTION_ID: 'Invalid Transaction Id',
   TRANSACTION_ZERO: 'You Dont Have Any Transactions',
 };
+
+export enum TransactionStatus {
+      PENDING = 'pending',
+      ACCEPTED = 'accepted',
+      REJECTED = 'rejected',
+}
+
+export enum PaymentMethod {
+      VISA = 'Visa',
+      MASTERCARD = 'MasterCard',
+      QR = 'QR Payment',
+      PROMPTPAY = 'PromptPay',
+      MOBILE = 'Mobile Banking',
+}

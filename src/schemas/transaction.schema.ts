@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory,  } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { TransactionStatus, PaymentMethod } from '../transaction/dtos/create-transaction.dto';
+import { TransactionStatus, PaymentMethod } from '../transaction/transaction.asset';
 //what pattern will the data be saved in db
 export type TransactionDocument = HydratedDocument<Transaction>;
 
@@ -23,7 +23,7 @@ export class Transaction {
       method?: PaymentMethod;
 
       @Prop() //required ObjectId in the future
-      puserId: string;
+      userId: string;
       // @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
       // userId: Types.ObjectId;
 }

@@ -7,19 +7,9 @@ import {IsNotEmpty,
       IsEnum,
 } from 'class-validator';
 
-export enum TransactionStatus {
-      PENDING = 'pending',
-      ACCEPTED = 'accepted',
-      REJECTED = 'rejected',
-}
-
-export enum PaymentMethod {
-      VISA = 'Visa',
-      MASTERCARD = 'MasterCard',
-      QR = 'QR Payment',
-      PROMPTPAY = 'PromptPay',
-      MOBILE = 'Mobile Banking',
-}
+import { TransactionStatus,
+      PaymentMethod
+} from '../transaction.asset';
 
 export class CreateTransactionDto {
 

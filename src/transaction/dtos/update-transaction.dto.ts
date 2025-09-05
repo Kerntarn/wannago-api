@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateTransactionDto, 
-      TransactionStatus, 
-      PaymentMethod } from './create-transaction.dto';
+import { CreateTransactionDto } from './create-Transaction.dto'
+import {TransactionStatus, 
+      PaymentMethod } from '../transaction.asset';
 import { IsOptional, 
       IsEnum, 
       IsNumber, 
