@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory,  } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { TransactionStatus, PaymentMethod } from '../transaction/dtos/create-transaction.dto';
 //what pattern will the data be saved in db
@@ -16,7 +16,7 @@ export class Transaction {
       @Prop({ required: true, type: Number, min: 0 })
       amount: number;
 
-      @Prop({ type: Date, default: Date.now })
+      @Prop({ type: Date })
       payDate?: Date;
 
       @Prop({ enum: PaymentMethod })

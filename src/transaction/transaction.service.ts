@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { UpdateTransactionDto } from './dtos/update-transaction.dto';
 import { Transaction, TransactionDocument } from 'src/schemas/transaction.schema';
+import { TransactionMessages } from './transaction.asset';
 
 @Injectable()
 export class TransactionService {
@@ -23,7 +24,6 @@ export class TransactionService {
   }
 
   async update(id: string, updateDto: UpdateTransactionDto): Promise<Transaction> {
-    
     try {
       const updated = await this.transactionModel.findByIdAndUpdate(
         id,
@@ -31,7 +31,7 @@ export class TransactionService {
         { new: true, runValidators: true } // return document ใหม่, เช็ค validation
       )
       if (!updated) {
-        throw new NotFoundException(`Transaction with id ${id} not found`);
+        throw new NotFoundException(TransactionMessages.TRANSACTION_NOT_FOUND);
       }
       return updated; 
     } catch(error){
@@ -40,15 +40,22 @@ export class TransactionService {
     }
   }
 
+  async remove(id: string): Promise<Transaction | null> {
+    const deleted = await this.transactionModel.findByIdAndDelete(id).exec();
+    if (!deleted) {
+      throw new NotFoundException(TransactionMessages.TRANSACTION_NOT_FOUND);
+    }
+    return deleted
+  }
+
+  //Todo: addTransactionToAccounts
+
+  async findOne(id: string): Promise<Transaction| null> {
+    return this.transactionModel.findById(id).exec();
+  }
+
   async findAll(): Promise<Transaction[]> {
     return this.transactionModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Transaction | null> {
-    return this.transactionModel.findById(id).exec();
-  }
-
-  async remove(id: string): Promise<Transaction | null> {
-    return this.transactionModel.findByIdAndDelete(id).exec();
-  }
 }

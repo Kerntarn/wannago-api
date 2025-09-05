@@ -3,7 +3,6 @@ import {IsNotEmpty,
       IsNumber,
       IsPositive,
       IsString,
-      IsIn,
       IsDateString,
       IsEnum,
 } from 'class-validator';
@@ -74,7 +73,7 @@ export class CreateTransactionDto {
       message:
             'Method must be either Visa, MasterCard, QR Payment, PromptPay or Mobile Banking',
       })
-      method?: string;
+      method!: string;
 
       //userId เจ้าของ transaction
       @ApiProperty({

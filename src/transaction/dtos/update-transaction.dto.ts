@@ -37,17 +37,6 @@ export class UpdateTransactionDto extends PartialType(CreateTransactionDto) {
       })
       method?: PaymentMethod;
 
-      //update amount
-      @ApiProperty({
-            description: 'Transaction amount',
-            example: 100,
-            required: false,
-      })
-      @IsOptional()
-      @IsNumber()
-      @IsPositive()
-      amount?: number;
-
       //update payDate
       @ApiProperty({
             description: 'Transaction pay date',
