@@ -8,6 +8,7 @@ import { PlansModule } from './plans/plans.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { JwtModule } from '@nestjs/jwt';
+import { TransactionModule } from './transaction/transaction.module';
 
 @Module({
   imports: [
@@ -32,7 +33,8 @@ import { JwtModule } from '@nestjs/jwt';
     PlacesModule,
     PlansModule,
     AuthModule,
-    UsersModule],
+    UsersModule,
+    TransactionModule,],
   controllers: [AppController],
   providers: [AppService],
 })
