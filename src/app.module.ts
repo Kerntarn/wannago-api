@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { TransactionModule } from './transaction/transaction.module';
 import { TransportModule } from './transport/transportMethod.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { TransportModule } from './transport/transportMethod.module';
     AuthModule,
     UsersModule,
     TransactionModule,
-    TransportModule,],
+    TransportModule,
+    TagsModule,],
   controllers: [AppController],
   providers: [AppService],
 })
