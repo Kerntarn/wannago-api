@@ -17,6 +17,15 @@ export class TransactionController {
       data: transaction,
     };
   }
+  @Get()
+  findAll() {
+    return this.transactionService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.transactionService.findOne(id);
+  }
 
   @Patch('accept-transaction/:id')
   async acceptTransaction(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
@@ -24,16 +33,16 @@ export class TransactionController {
     const transUpdatedStatus = await this.transactionService.update(id, { status, payDate });
     //Todo: addTransactionToAccounts
     // await this.transactionService.addTransactionToAccounts({
-    //   transaction: transactionUpdatedStatus,
-    //   status: 'accepted',
-    // });
-    return {
-      message: TransactionMessages.TRANSACTION_ACCEPTED,
-      status: HttpStatus.OK,
-      data: transUpdatedStatus,
-    };
+      //   transaction: transactionUpdatedStatus,
+      //   status: 'accepted',
+      // });
+      return {
+        message: TransactionMessages.TRANSACTION_ACCEPTED,
+        status: HttpStatus.OK,
+        data: transUpdatedStatus,
+      };
   }
-
+  
   @Patch('reject-transaction/:id')
   async rejectTransaction(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
     const { status } = updateTransactionDto;
@@ -62,6 +71,12 @@ export class TransactionController {
     };
   }
 
+  
+  
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
+    return this.transactionService.update(id, updateTransactionDto);
+  }
   @Delete(':id')
   async removeTransaction(@Param('id') id: string) {
     const deleted = await this.transactionService.remove(id);
@@ -70,20 +85,5 @@ export class TransactionController {
       status: HttpStatus.OK,
       data: deleted,
     };
-  }
-
-  @Get()
-  findAll() {
-    return this.transactionService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.transactionService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
-    return this.transactionService.update(id, updateTransactionDto);
   }
 }
