@@ -123,10 +123,6 @@ export class TagsService {
     return `This action returns a #${id} tag`;
   }
 
-  update(id: number, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} tag`;
-  }
-
   remove(id: number) {
     return `This action removes a #${id} tag`;
   }
