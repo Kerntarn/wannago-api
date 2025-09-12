@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { PlacesService } from './places.service';
 import { CreatePlaceDto, FindPlaceQueryDto } from 'src/places/dtos/place.dto';
 import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { CreateAccommodationDto, UpdateAccommodationDto } from 'src/places/dtos/accommodation.dto';
 import { CreateRestaurantDto, UpdateRestaurantDto } from 'src/places/dtos/restaurant.dto';
 import { CreateAttractionDto, UpdateAttractionDto } from 'src/places/dtos/attraction.dto';
-import { ApiExtraModels } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('places')
 @ApiExtraModels(CreateAccommodationDto, CreateRestaurantDto, CreateAttractionDto)
@@ -39,18 +41,21 @@ export class PlacesController {
   }
 
   @Patch('accommodation/:id')
-  updateAcc(@Param('id') id: string, @Body() updateAccommodationDto: UpdateAccommodationDto) {
-    return this.placesService.update(id, updateAccommodationDto, 'Accommodation');
+  updateAcc(@Param('id') id: string, @Body() updateAccommodationDto: UpdateAccommodationDto, @CurrentUser() user) {
+    return this.placesService.update(id, updateAccommodationDto, 'Accommodation', user._id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt')
   @Patch('attraction/:id')
-  updateAtt(@Param('id') id: string, @Body() updateAttractionDto: UpdateAttractionDto) {
-    return this.placesService.update(id, updateAttractionDto, 'Attraction');
+  updateAtt(@Param('id') id: string, @Body() updateAttractionDto: UpdateAttractionDto, @CurrentUser() user) {
+    console.log("User in updateAtt:", user);
+    return this.placesService.update(id, updateAttractionDto, 'Attraction', user._id);
   }
 
   @Patch('restaurant/:id')
-  updateRes(@Param('id') id: string, @Body() updateRestaurantDto: UpdateRestaurantDto) {
-    return this.placesService.update(id, updateRestaurantDto, 'Restaurant');
+  updateRes(@Param('id') id: string, @Body() updateRestaurantDto: UpdateRestaurantDto, @CurrentUser() user) {
+    return this.placesService.update(id, updateRestaurantDto, 'Restaurant', user._id);
   }
 
   @Delete(':id')

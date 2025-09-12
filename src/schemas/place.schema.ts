@@ -18,7 +18,7 @@ export class Place {
   @Prop( { type: String } )
   description: string;
 
-  @Prop() //required ObjectId in the future
+  @Prop( { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true } )
   providerId: ObjectId;
   
   @Prop()
