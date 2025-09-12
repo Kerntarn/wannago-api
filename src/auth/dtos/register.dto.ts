@@ -27,12 +27,6 @@ export class RegisterDto {
     @Length(3, 30)
     userName: string;
 
-    @ApiProperty({ minLength: 8 })
-    @IsString()
-    @MinLength(8)
-    @Match('password', { message: 'Passwords do not match' })
-    confirmPassword: string;
-
     @ApiPropertyOptional()
     @IsOptional()
     @IsString()
@@ -40,6 +34,6 @@ export class RegisterDto {
 
     @ApiPropertyOptional()
     @IsOptional()
-    @IsPhoneNumber()
+    @IsPhoneNumber('TH')
     phoneNumber?: string;
 }
