@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UpdateTagDto } from './dto/update-tag.dto';
 
 @Injectable()
 export class TagsService {
