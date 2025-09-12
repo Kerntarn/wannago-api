@@ -3,19 +3,20 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/role.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 @Controller('users')
 export class UsersController {
     constructor(private readonly userservice: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async getProfile(@Request() req) {
-    const user = await this.userservice.findByEmail(req.user.email);
+  @UseGuards(JwtAuthGuard)
+  getProfile(@CurrentUser() user) {
     return {
-      id : user._id,
+      id: user.userId,
       email: user.email,
-      userName: user.userName,
+      userName: user.username,
+      role: user.role, // เพิ่ม role ได้ด้วย
     };
-}
+  }
 
 }
