@@ -10,23 +10,25 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('places')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('jwt')
 @ApiExtraModels(CreateAccommodationDto, CreateRestaurantDto, CreateAttractionDto)
 export class PlacesController {
   constructor(private readonly placesService: PlacesService) {}
 
   @Post('accommodation')
-  createAcc(@Body() createAccommodatinDto: CreateAccommodationDto) {
-    const place = this.placesService.create(createAccommodatinDto, 'Accommodation');
+  createAcc(@Body() createAccommodatinDto: CreateAccommodationDto, @CurrentUser() user) {
+    const place = this.placesService.create(createAccommodatinDto, 'Accommodation', user);
     return place;
   }
   @Post('attraction')
-  createAtt(@Body() createAttractionDto: CreateAttractionDto) {
-    const place = this.placesService.create(createAttractionDto, 'Attraction');
+  createAtt(@Body() createAttractionDto: CreateAttractionDto, @CurrentUser() user) {
+    const place = this.placesService.create(createAttractionDto, 'Attraction', user);
     return place;
   }
   @Post('restaurant')
-  createRes(@Body() createRestaurantDto: CreateRestaurantDto) {
-    const place = this.placesService.create(createRestaurantDto, 'Restaurant');
+  createRes(@Body() createRestaurantDto: CreateRestaurantDto, @CurrentUser() user) {
+    const place = this.placesService.create(createRestaurantDto, 'Restaurant', user);
     return place;
   }
 
@@ -45,8 +47,6 @@ export class PlacesController {
     return this.placesService.update(id, updateAccommodationDto, 'Accommodation', user._id);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('jwt')
   @Patch('attraction/:id')
   updateAtt(@Param('id') id: string, @Body() updateAttractionDto: UpdateAttractionDto, @CurrentUser() user) {
     console.log("User in updateAtt:", user);

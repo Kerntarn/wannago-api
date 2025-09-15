@@ -7,8 +7,8 @@ export class CreatePlanDto {
     name?: string;
     
     @ApiProperty()
-    @IsNotEmpty()
-    destination: string;
+    @IsOptional()
+    destination?: string;
     
     @ApiProperty()
     @IsOptional()

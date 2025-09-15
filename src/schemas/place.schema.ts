@@ -9,8 +9,8 @@ export class Place {
   @Prop( { required: true } )
   name: string;
 
-  @Prop( { type: String })
-  imageUrl: string
+  @Prop( { type: String, default: ''})
+  imageUrl?: string
 
   @Prop( { required: true, type: [Number] } )
   location: number[];

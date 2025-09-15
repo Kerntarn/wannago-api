@@ -8,8 +8,8 @@ export class CreatePlaceDto {
     name: string;
     
     @ApiProperty()
-    @IsNotEmpty()
-    imgaeUrl: string;
+    @IsOptional()
+    imageUrl?: string;
     
     @ApiProperty()
     @IsNotEmpty()
@@ -20,6 +20,10 @@ export class CreatePlaceDto {
     @ApiProperty()
     @IsNotEmpty()
     description: string;
+
+    @ApiProperty()
+    @IsNotEmpty()
+    tags: string[];
 }
 
 export class UpdatePlaceDto {
