@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
 import { TransportMethod, TransportMethodDocument } from 'src/schemas/transportMethod.schema';
 import { User, UserDocument } from 'src/schemas/user.schema';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SeedService {
@@ -24,7 +25,7 @@ export class SeedService {
     console.log('🗑️ Old data deleted');
 
     const users = await this.userModel.insertMany([
-        { email: '66010270@kmitl.ac.th', role: 'admin', password: process.env.ADMIN_PASSWORD || 'admin', firstName: 'Admin', lastName: 'Naja', userName: 'admin001' },
+        { email: '66010270@kmitl.ac.th', role: 'admin', password: await bcrypt.hash(process.env.ADMIN_PASSWORD, 10) || 'admin', firstName: 'Admin', lastName: 'Naja', userName: 'admin001' },
     ])
     const adminId = users[0]._id;
     await this.placeModel.insertMany([
