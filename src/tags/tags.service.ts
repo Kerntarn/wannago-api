@@ -118,12 +118,4 @@ export class TagsService {
   findAll() {
     return this.tags;
   }
-
-  findOne(id: number) {
-    return `This action returns a #${id} tag`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} tag`;
-  }
 }
