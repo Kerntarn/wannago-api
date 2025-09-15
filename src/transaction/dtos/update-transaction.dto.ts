@@ -10,17 +10,16 @@ import { IsOptional,
       IsDateString } from 'class-validator';
 
 export class UpdateTransactionDto extends PartialType(CreateTransactionDto) {
-      
       //update status
       @ApiProperty({
             description: 'Transaction status',
-            example: TransactionStatus.ACCEPTED,
+            example: TransactionStatus. SUCCESS,
             enum: TransactionStatus,
             required: false,
       })
       @IsOptional()
       @IsEnum(TransactionStatus, {
-            message: 'Status must be either pending, accepted, or rejected',
+            message: 'Status must be either Pending, Success, Failed or Cancelled',
       })
       status?: TransactionStatus;
 

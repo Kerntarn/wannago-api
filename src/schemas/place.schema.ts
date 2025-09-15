@@ -2,8 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 //what pattern will the data be saved in db
 export type PlaceDocument = HydratedDocument<Place>;
-
-@Schema()
+@Schema({
+  discriminatorKey: 'type', collection: 'places'
+})
 export class Place {
   @Prop( { required: true } )
   name: string;
@@ -16,9 +17,6 @@ export class Place {
 
   @Prop( { type: String } )
   description: string;
-
-  @Prop( { required: true} )
-  type: string;
 
   @Prop() //required ObjectId in the future
   providerId: string;
