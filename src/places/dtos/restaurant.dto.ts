@@ -1,15 +1,17 @@
 import { ApiProperty, IntersectionType, PartialType } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty } from 'class-validator';
 import { CreatePlaceDto, UpdatePlaceDto } from './place.dto';
 // What we expect when receiving request
 
 export class CreateRestaurantDto extends CreatePlaceDto {
-    @ApiProperty()
+    @ApiProperty({format: 'date-time', example: '1970-01-01T10:00:00+07:00',})
     @IsNotEmpty()
+    @IsDateString()
     openingHours: string;
     
-    @ApiProperty()
+    @ApiProperty({format: 'date-time', example: '1970-01-01T20:00:00+07:00',})
     @IsNotEmpty()
+    @IsDateString()
     closingHours: string;
     
     @ApiProperty()

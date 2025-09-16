@@ -12,7 +12,7 @@ export class Accommodation extends Place{
     @Prop( { required: true})
     starRating: number;
 
-    @Prop( { default: ''})
+    @Prop()
     redirectUrl?: string;
 
 }

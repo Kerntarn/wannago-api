@@ -18,7 +18,8 @@ export type UserDocument = User & Document;
       }
       return ret;
     }
-  }
+  },
+  versionKey: false
 })
 export class User {
   _id: ObjectId;
