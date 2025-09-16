@@ -8,8 +8,6 @@ export type planDocument = HydratedDocument<Plan>;
 export class Plan{
     @Prop()
     name: string; // Removed `required: true` since it is auto-filled in the pre-save middleware
-    
-    @Prop( {required: true, type: Date})
 
     @Prop( {required: true, type: [Number]})
     source: number[];
