@@ -5,73 +5,64 @@ import {IsNotEmpty,
       IsString,
       IsDateString,
       IsEnum,
+      IsMongoId
 } from 'class-validator';
 
 import { TransactionStatus,
-      PaymentMethod
+      PaymentMethod,
+      AdvertiserType,
+      AdDuration,
 } from '../transaction.asset';
 
 export class CreateTransactionDto {
 
-      // purpose ของ transaction
-      @ApiProperty({
-      description: 'Transaction purpose',
-      example: 'Payment for hotel adds',
-      })
-      @IsString()
-      @IsNotEmpty()
-      purpose!: string;
+      // @ApiProperty({
+      //       description: 'User ID who created the transaction',
+      //       example: '64fa1234567890abcdef1234',
+      // })
+      // @IsMongoId({ message: 'Invalid MongoDB ObjectId' })
+      // @IsNotEmpty()
+      // userId!: string; 
 
-      // status ของ transaction
       @ApiProperty({
-      description: 'Transaction status',
-      example: TransactionStatus.PENDING,
-      enum: TransactionStatus,
+            description: 'ype of advertiser',
+            example: AdvertiserType.CARRENTAL,
+            enum: AdvertiserType,
+      })
+      @IsEnum(AdvertiserType, {
+            message:`adType must be a valid AdvertiserType value: ${Object.values(AdvertiserType).join(', ')}`,
+      })
+      @IsNotEmpty({ message: 'adType should not be empty' })
+      adType!: AdvertiserType; 
+
+      @ApiProperty({
+            description: 'Duration of the ad in days',
+            example: AdDuration.DAYS_7,
+            enum: AdDuration,
+      })
+      @IsEnum(AdDuration, {
+            message: `adDuration must be one of: ${Object.values(AdDuration).join(', ')}`,
       })
       @IsNotEmpty()
-      @IsEnum(TransactionStatus, {
-      message: 'Status must be either pending, accepted, or rejected',
-      })
-      status!: string;
+      adDuration!: AdDuration;
 
-      //จำนวนเงิน
       @ApiProperty({
-      description: 'Transaction amount',
-      example: 50,
+            description: 'Transaction amount',
+            example: 50,
       })
       @IsNumber()
       @IsPositive()
       @IsNotEmpty()
       amount!: number;
 
-      //วันที่จ่าย (optional)
       @ApiProperty({
-      description: 'Transaction date',
-      example: '2024-01-17T12:00:00Z',
+            description: 'Payment method',
+            example: PaymentMethod.PROMPTPAY,
+            enum: PaymentMethod,
       })
-      @IsDateString()
-      payDate?: string;
-
-      //วิธีจ่าย (optional)
-      @ApiProperty({
-      description: 'Transaction method',
-      example: PaymentMethod.PROMPTPAY,
-      enum: PaymentMethod,
-      })
-      @IsString()
       @IsEnum(PaymentMethod, {
-      message:
-            'Method must be either Visa, MasterCard, QR Payment, PromptPay or Mobile Banking',
+            message:'Method must be either Visa, MasterCard, QR Payment, PromptPay or Mobile Banking',
       })
-      method!: string;
-
-      //userId เจ้าของ transaction
-      @ApiProperty({
-      description: 'User ID associated with this transaction',
-      type: String,
-      example: '64fa1234567890abcdef1234',
-      })
-      @IsString()
       @IsNotEmpty()
-      userId!: string; 
+      method!: PaymentMethod;
 }
