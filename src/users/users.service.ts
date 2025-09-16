@@ -50,5 +50,7 @@ export class UsersService {
     async findByUsername(userName: string): Promise<User | null> {
         return this.userModel.findOne({ userName }).exec();
     }
-
+    async findById(id: string): Promise<User | null> {
+        return this.userModel.findById(id).exec();
+    }
 }

@@ -4,21 +4,15 @@ import { User } from 'src/schemas/user.schema';
 export const CurrentUser = createParamDecorator(
   (data: keyof User | undefined, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    let user = request.user; // ใช้ let แทน const
+    const user = request.user;
 
     if (!user) {
       return null;
     }
-
-    // แปลง Mongoose Document เป็น plain object
-    if (typeof user.toObject === 'function') {
-      user = user.toObject();
-    }
-
-    // คืน field เฉพาะถ้ามี data
-    if (data) return user[data];
-
-    // คืน object ทั้งหมด
+    // console.log('CurrentUser decorator data:', data);
+    // if (data) {
+    //   return user[data];
+    // }
     return user;
   },
 );

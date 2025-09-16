@@ -11,12 +11,8 @@ export class UsersController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   getProfile(@CurrentUser() user) {
-    return {
-      id: user.userId,
-      email: user.email,
-      userName: user.username,
-      role: user.role, // เพิ่ม role ได้ด้วย
-    };
+    console.log(user);
+    return user;
   }
 
 }
