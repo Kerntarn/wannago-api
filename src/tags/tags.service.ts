@@ -16,17 +16,6 @@ export class TagsService {
     "digital-nomad"
   ],
 
-  "transportation": [
-    "motorbike",
-    "car",
-    "van",
-    "tour-bus",
-    "bicycle",
-    "walking",
-    "self-drive",
-    "road-trip"
-  ],
-
   "accommodation": [
     "hotel",
     "resort",

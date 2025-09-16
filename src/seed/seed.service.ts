@@ -29,8 +29,8 @@ export class SeedService {
     ])
     const adminId = users[0]._id;
     await this.placeModel.insertMany([
-      { name: 'Shabu Party', location: [13.7225906, 100.7783234], description: 'ชาบูร้านแจ่มย่านลาดกระบัง', providerId: adminId, type: 'Restaurant', openingHours: '08:00', closingHours: '23:30', contactInfo: 'ig:shabu_party', cuisineType: 'Suki Buffet' },
-      { name: 'ร้านไก่จีน', location: [13.727688, 100.7715763], description: 'ร้านไก่จีนย่านลาดกระบัง', providerId: adminId, type: 'Restaurant', openingHours: '11:00', closingHours: '22:00', contactInfo: 'ig:J3K_chicken', cuisineType: 'Chinese Fried Chicken' },
+      { name: 'Shabu Party', location: [13.7225906, 100.7783234], description: 'ชาบูร้านแจ่มย่านลาดกระบัง', providerId: adminId, type: 'Restaurant', openingHours: '1970-01-01T07:00:00+07:00', closingHours: '1970-01-01T23:30:00+07:00', contactInfo: 'ig:shabu_party', cuisineType: 'Suki Buffet' },
+      { name: 'ร้านไก่จีน', location: [13.727688, 100.7715763], description: 'ร้านไก่จีนย่านลาดกระบัง', providerId: adminId, type: 'Restaurant', openingHours: '1970-01-01T11:00:00+07:00', closingHours: '1970-01-01T22:00:00+07:00', contactInfo: 'ig:J3K_chicken', cuisineType: 'Chinese Fried Chicken' },
       { name: 'อุทยานแห่งชาติเขาใหญ่', location: [14.3109281, 101.5278666], description: 'อุทยานที่โด่งดังที่เขาว่ากันอ่ะ', providerId: adminId, type: 'Attraction', entryFee: 40 },
       { name: 'ทะเลบางแสน', location: [13.4856867, 101.0405108], description: 'ทะเลที่คนเยอะชิบหาย หนึ่งในทะเลที่คนนึกถึงบ่อยที่สุด', providerId: adminId, type: 'Attraction', entryFee: 0 },
       { name: 'หอพักบ้านสบาย', location: [13.7263258, 100.7708484,20], description: 'หอพักที่มีบรรยากาศดีและราคาไม่แพง สุดยอดสุดๆไปเลย', providerId: adminId, type: 'Accommodation', starRating: 0, facilities: ['5G wifi'] },
