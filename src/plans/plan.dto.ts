@@ -1,11 +1,19 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { IsDateString, IsNotEmpty, IsOptional, IsString, Min } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class CreatePlanDto {
     @ApiProperty()
     @IsOptional()
     name?: string;
-    
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsArray()
+    @IsNumber({}, { each: true })
+    @ArrayMinSize(2, { message: 'Give me longitude and latitude'})
+    @ArrayMaxSize(2, { message: 'Give me longitude and latitude'})
+    source: number[];
+
     @ApiProperty()
     @IsOptional()
     destination?: string;
@@ -38,6 +46,7 @@ export class CreatePlanDto {
     @ApiProperty()
     @IsNotEmpty()
     @IsString({each: true})
+    @ArrayMinSize(1)
     preferredTags: string[];
 }
 
