@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
@@ -34,14 +34,16 @@ export class TransactionService {
         status: TransactionStatus.PENDING,
         expiresAt,
       });
-
       await transaction.save();
       return transaction;
     } catch (e) {
       console.error('Error saving transaction:', e);
-      throw new InternalServerErrorException('ไม่สามารถสร้างรายการได้');
+      throw new InternalServerErrorException({
+        message: e.message,
+      });
     }
-  }
+}
+
 
   async processPayment(dto: ProcessPaymentDto) {
     const transaction = await this.transactionModel.findById(dto.transactionId);

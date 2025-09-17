@@ -25,7 +25,7 @@ export class CreateTransactionDto {
       // userId!: string; 
 
       @ApiProperty({
-            description: 'ype of advertiser',
+            description: 'Aype of advertiser',
             example: AdvertiserType.CARRENTAL,
             enum: AdvertiserType,
       })

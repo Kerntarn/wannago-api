@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PlacesModule } from './places/places.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { TransactionModule } from './transaction/transaction.module';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
@@ -30,7 +31,8 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     PlacesModule,
     AuthModule,
-    UsersModule],
+    UsersModule,
+    TransactionModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -1,32 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Req, UseGuards, NotFoundException} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Req, UseGuards, NotFoundException, BadRequestException} from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { Transaction } from '../schemas/transaction.schema';
 import { TransactionMessages } from './transaction.asset';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { UpdateTransactionDto } from './dtos/update-transaction.dto';
 import { ProcessPaymentDto } from './dtos/process-payment.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 
-@Controller('ads/transaction')
+@Controller('/transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   // สร้าง transaction -> เริ่มซื้อโฆษณา
-  @UseGuards(JwtAuthGuard) //NICK
   @Post() 
   async createTransaction(@Req() req, @Body() createDto: CreateTransactionDto) {
-    try {
-      const userId = req.user.id;
-      const transaction = await this.transactionService.create(userId, createDto);
-      return {
-        data: transaction,
-      };
-    } catch (error) {
-      return {
-        message: 'Failed to create transaction',
-      };
-    }
+      if (!req.user || !req.user.id) {
+        throw new BadRequestException('User not authenticated or missing id');
+      }
+      const transaction = await this.transactionService.create(req.user.id, createDto);
+      return {data: transaction};
   }
 
   //จ่ายเงิน
