@@ -52,4 +52,48 @@ export class AdService {
     await this.adModel.deleteOne({ _id: adId });
     return { message: 'Ad deleted successfully' };
   }
+
+  async incrementViews(adId: string) {
+    const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { views: 1 } }, { new: true });
+    const formatted = {
+        _id: ad._id,
+        owner: ad.owner,
+        name: ad.name,
+        views: ad.views
+      };
+    return formatted;
+  }
+
+  async incrementClicks(adId: string) {
+    const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { clicks: 1 } }, { new: true });
+    const formatted = {
+        _id: ad._id,
+        owner: ad.owner,
+        name: ad.name,
+        clicks: ad.clicks
+      };
+    return formatted;
+  }
+
+  async incrementContacts(adId: string) {
+    const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { contacts: 1 } }, { new: true });
+    const formatted = {
+        _id: ad._id,
+        owner: ad.owner,
+        name: ad.name,
+        contacts: ad.contacts
+      };
+    return formatted;
+  }
+
+  async incrementBookings(adId: string) {
+   const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { bookings: 1 } }, { new: true });
+    const formatted = {
+        _id: ad._id,
+        owner: ad.owner,
+        name: ad.name,
+        bookings: ad.bookings
+      };
+      return formatted;
+  }
 }

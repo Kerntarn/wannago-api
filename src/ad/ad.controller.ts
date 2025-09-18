@@ -42,5 +42,29 @@ export class AdController {
     const ownerId = user._id;
     return this.adService.deleteAd(adId, ownerId);
   }
+
+  @Patch(':id/view')
+  async addView(@Param('id') id: string) {
+    const ad = await this.adService.incrementViews(id);
+    return { data: ad };
+  }
+
+  @Patch(':id/click')
+  async addClick(@Param('id') id: string) {
+    const ad = await this.adService.incrementClicks(id);
+    return { data: ad };
+  }
+
+  @Patch(':id/contacts')
+  async addContacts(@Param('id') id: string) {
+    const ad = await this.adService.incrementContacts(id);
+    return { data: ad };
+  }
+
+  @Patch(':id/bookings')
+  async addBookings(@Param('id') id: string) {
+    const ad = await this.adService.incrementBookings(id);
+    return { data: ad };
+  }
   
 }
