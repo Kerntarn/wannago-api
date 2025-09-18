@@ -44,6 +44,9 @@ export class Ad {
   
   @Prop({ required: true , type: Types.ObjectId, ref: 'User'}) 
   owner: Types.ObjectId;
+
+  @Prop({ required: true , type: Types.ObjectId, ref: 'Place'})
+  place: Types.ObjectId;
   
   @Prop({ type: String, enum: ['draft','pending_payment','active','inactive'], default: 'draft' }) 
   status: string;

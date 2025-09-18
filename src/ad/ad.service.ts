@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Ad, AdDocument } from '../schemas/ad.schema';
 import { Transaction, TransactionDocument } from '../schemas/transaction.schema';
+import { Place, PlaceDocument } from '../schemas/place.schema';
 import { CreateAdDto } from './dtos/create-ad.dto';
 
 @Injectable()
@@ -11,14 +12,32 @@ export class AdService {
   constructor(
     @InjectModel(Ad.name) private adModel: Model<AdDocument>,
     @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
+    @InjectModel(Place.name) private placeModel: Model<Place>,
   ) {}
 
   //สร้าง
   async createAd(ownerId: string, createAdDto: CreateAdDto) {
-    const ad = await this.adModel.create({...createAdDto, owner: new Types.ObjectId(ownerId), status: 'draft'});
-    const formatted = {
+  
+    const place = await this.placeModel.create({
+      name: createAdDto.name,
+      imgaeUrl: createAdDto.images,
+      location: createAdDto.location,
+      description: createAdDto.description,
+      providerId: new Types.ObjectId(ownerId),
+      tags: createAdDto.targetAudience
+    });
+
+    const ad = await this.adModel.create({
+      ...createAdDto,
+      owner: new Types.ObjectId(ownerId),
+      status: 'draft',
+      place: place._id, 
+    });
+
+    return {
       _id: ad._id,
       owner: ad.owner,
+      place: place._id,
       name: ad.name,
       targetAudience: ad.targetAudience,
       durationDays: ad.durationDays,
@@ -27,7 +46,6 @@ export class AdService {
       createdAt: ad.createdAt,
       expireAt: ad.expireAt,
     };
-    return formatted;
   }
 
   //ads ทั้งหมดเอาไปใส่ตาราง
