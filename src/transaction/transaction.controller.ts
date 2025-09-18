@@ -5,7 +5,13 @@ import { TransactionMessages } from './transaction.asset';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { UpdateTransactionDto } from './dtos/update-transaction.dto';
 import { ProcessPaymentDto } from './dtos/process-payment.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { UsersService } from 'src/users/users.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/role.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../schemas/user.schema';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+
 
 
 
@@ -14,11 +20,12 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   // สร้าง transaction -> เริ่มซื้อโฆษณา
-  @UseGuards(JwtAuthGuard) //NICK
-  @Post() 
-  async createTransaction(@Req() req, @Body() createDto: CreateTransactionDto) {
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
+  @Post()
+  async createTransaction(@CurrentUser() user: any, @Body() createDto: CreateTransactionDto) {
     try {
-      const userId = req.user.id;
+      const userId = user._id; // Use user._id from CurrentUser decorator
       const transaction = await this.transactionService.create(userId, createDto);
       return {
         data: transaction,
@@ -39,21 +46,37 @@ export class TransactionController {
     return this.transactionService.findOne(id);
   }
 
-  //จ่ายเงิน
-  @Post(':transactionId/process-payment')
-  async processPayment(@Body() dto: ProcessPaymentDto) {
-    const transaction = await this.transactionService.processPayment(dto);
-    return { data: transaction };
+  @Patch('accept-transaction/:id')
+  async acceptTransaction(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
+    const { status, payDate } = updateTransactionDto;
+    const transUpdatedStatus = await this.transactionService.update(id, { status, payDate });
+    //Todo: addTransactionToAccounts
+    // await this.transactionService.addTransactionToAccounts({
+      //   transaction: transactionUpdatedStatus,
+      //   status: 'accepted',
+      // });
+      return {
+        message: TransactionMessages.TRANSACTION_ACCEPTED,
+        status: HttpStatus.OK,
+        data: transUpdatedStatus,
+      };
   }
+  
+  @Patch('reject-transaction/:id')
+  async rejectTransaction(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
+    const { status } = updateTransactionDto;
+    const transUpdatedStatus = await this.transactionService.update(id, { status });
 
-  // ดู transaction เดี่ยว
-  @Get(':transactionId') 
-  async getTransaction(@Param('transactionId') transactionId: string): Promise<{ data: Transaction }> {
-    const transaction = await this.transactionService.findOne(transactionId);
-    if (!transaction) {
-      throw new NotFoundException('Transaction not found');
-    }
-    return { data: transaction };
+    //Todo: addTransactionToAccounts
+    // await this.transactionService.addTransactionToAccounts({
+    //   transaction: transactionUpdated,
+    //   status: 'rejected',
+    // });
+    return {
+      message: TransactionMessages.TRANSACTION_REJECTED,
+      status: HttpStatus.OK,
+      data: transUpdatedStatus,
+    };
   }
 
   // ดูรายการ transaction ของผู้ใช้
@@ -63,9 +86,14 @@ export class TransactionController {
     return { data: transactions };
   }
 
-
-  @Delete(':transactionId')
-  async removeTransaction(@Param('transactionId') id: string) {
+  
+  
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
+    return this.transactionService.update(id, updateTransactionDto);
+  }
+  @Delete(':id')
+  async removeTransaction(@Param('id') id: string) {
     const deleted = await this.transactionService.remove(id);
     return {
       message: TransactionMessages.TRANSACTION_DELETED,
@@ -73,11 +101,5 @@ export class TransactionController {
       data: deleted,
     };
   }
-
-  @Patch(':transactionId')
-  update(@Param('transactionId') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
-    return this.transactionService.update(id, updateTransactionDto);
-  }
-
 }
 
