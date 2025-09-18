@@ -5,20 +5,32 @@ import { TransactionMessages } from './transaction.asset';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { UpdateTransactionDto } from './dtos/update-transaction.dto';
 import { ProcessPaymentDto } from './dtos/process-payment.dto';
-
-
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/role.guard'
+import { Roles } from '../auth/decorators/roles.decorator'
+import { UserRole } from '../schemas/user.schema';
+ 
 @Controller('/transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   // สร้าง transaction -> เริ่มซื้อโฆษณา
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
   @Post() 
   async createTransaction(@Req() req, @Body() createDto: CreateTransactionDto) {
-      if (!req.user || !req.user.id) {
-        throw new BadRequestException('User not authenticated or missing id');
-      }
       const transaction = await this.transactionService.create(req.user.id, createDto);
       return {data: transaction};
+  }
+  
+  @Get()
+  findAll() {
+    return this.transactionService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.transactionService.findOne(id);
   }
 
   //จ่ายเงิน
@@ -62,6 +74,4 @@ export class TransactionController {
   }
 
 }
-
- 
 

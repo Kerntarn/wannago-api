@@ -4,10 +4,13 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PlacesModule } from './places/places.module';
+import { PlansModule } from './plans/plans.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { JwtModule } from '@nestjs/jwt';
+import { TransportModule } from './transport/transportMethod.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -30,9 +33,12 @@ import { JwtModule } from '@nestjs/jwt';
       inject: [ConfigService],
     }),
     PlacesModule,
+    PlansModule,
     AuthModule,
     UsersModule,
-    TransactionModule],
+    TransactionModule,
+    TransportModule,
+    TagsModule,],
   controllers: [AppController],
   providers: [AppService],
 })

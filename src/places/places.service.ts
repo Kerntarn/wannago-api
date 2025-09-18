@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
 
@@ -32,13 +32,12 @@ export class PlacesService {
     return this.placeModel.findById(id).exec();
   }
 
-  async update(id: string, data: any, type: string) {
-    const currentUserId = "001";
+  async update(id: string, data: any, type: string, userId: ObjectId) {
     const place = await this.placeModel.findById(id).exec();
     if (!place) {
       throw new NotFoundException(`Place with ID ${id} not found`);
     }
-    if (place.providerId !== currentUserId) {
+    if (place.providerId !== userId) {
       throw new UnauthorizedException('You are not authorized to update this place');
     }
     if (place["type"] !== type) {

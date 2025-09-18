@@ -26,7 +26,7 @@ export class TransactionService {
       const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 นาที
 
       const transaction = new this.transactionModel({
-        userId,
+        userId: new Types.ObjectId(userId),
         adType: createDto.adType,
         adDuration: createDto.adDuration,
         amount: createDto.amount,
