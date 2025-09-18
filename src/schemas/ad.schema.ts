@@ -63,6 +63,9 @@ export class Ad {
 
   @Prop({ default: 0 }) 
   bookings: number;
+
+  @Prop({ default: 0 }) 
+  ctr: number;
 }
 
 export const AdSchema = SchemaFactory.createForClass(Ad);

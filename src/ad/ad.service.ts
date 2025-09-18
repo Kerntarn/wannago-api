@@ -54,23 +54,35 @@ export class AdService {
   }
 
   async incrementViews(adId: string) {
-    const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { views: 1 } }, { new: true });
+    const ad = await this.adModel.findById(adId);
+    if (!ad) throw new NotFoundException('Ad not found');
+
+    const ctr = ad.views > 0 ? parseFloat((( ad.clicks / ( ad.views + 1 )) * 100).toFixed(2)) : 0
+    const updateAd = await this.adModel.findByIdAndUpdate(adId,{ $inc: { views : 1 }, $set: { ctr }},{ new: true });
+
     const formatted = {
-        _id: ad._id,
-        owner: ad.owner,
-        name: ad.name,
-        views: ad.views
+        _id: updateAd._id,
+        owner: updateAd.owner,
+        name: updateAd.name,
+        views: updateAd.views,
+        ctr: updateAd.ctr
       };
     return formatted;
   }
 
   async incrementClicks(adId: string) {
-    const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { clicks: 1 } }, { new: true });
+    const ad = await this.adModel.findById(adId);
+    if (!ad) throw new NotFoundException('Ad not found');
+
+    const ctr = ad.views > 0 ? parseFloat((((ad.clicks + 1) / ad.views) * 100).toFixed(2)) : 0
+    const updateAd = await this.adModel.findByIdAndUpdate(adId,{ $inc: { clicks: 1 }, $set: { ctr }},{ new: true });
+
     const formatted = {
-        _id: ad._id,
-        owner: ad.owner,
-        name: ad.name,
-        clicks: ad.clicks
+        _id: updateAd._id,
+        owner: updateAd.owner,
+        name: updateAd.name,
+        clicks: updateAd.clicks,
+        ctr: updateAd.ctr
       };
     return formatted;
   }
