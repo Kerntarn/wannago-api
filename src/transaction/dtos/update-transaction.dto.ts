@@ -24,17 +24,17 @@ export class UpdateTransactionDto extends PartialType(CreateTransactionDto) {
       status?: TransactionStatus;
 
       //update method
-      @ApiProperty({
-            description: 'Transaction method',
-            example: PaymentMethod.PROMPTPAY,
-            enum: PaymentMethod,
-            required: false,
-      })
-      @IsOptional()
-      @IsEnum(PaymentMethod, {
-            message: 'Method must be either Visa, MasterCard, QR Payment, PromptPay or Mobile Banking',
-      })
-      method?: PaymentMethod;
+      // @ApiProperty({
+      //       description: 'Transaction method',
+      //       example: PaymentMethod.PROMPTPAY,
+      //       enum: PaymentMethod,
+      //       required: false,
+      // })
+      // @IsOptional()
+      // @IsEnum(PaymentMethod, {
+      //       message: 'Method must be either Visa, MasterCard, QR Payment, PromptPay or Mobile Banking',
+      // })
+      // method?: PaymentMethod;
 
       //update payDate
       @ApiProperty({

@@ -1,68 +1,62 @@
-import { ApiProperty } from '@nestjs/swagger';
-import {IsNotEmpty,
-      IsNumber,
-      IsPositive,
-      IsString,
-      IsDateString,
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+      IsOptional,
+      IsObject,
       IsEnum,
-      IsMongoId
+      IsString,
+      IsEmail,
+      IsCreditCard,
+      Matches
 } from 'class-validator';
+import { PaymentMethod } from '../transaction.asset';
 
-import { TransactionStatus,
-      PaymentMethod,
-      AdvertiserType,
-      AdDuration,
-} from '../transaction.asset';
+export class CardInfoDto {
+      @ApiProperty({ example: 'John Doe' })
+      @IsString()
+      holder: string;
+
+      @ApiProperty({ example: 'john@example.com' })
+      @IsEmail()
+      email: string;
+
+      @ApiProperty({ example: '4111111111111111' })
+      @IsCreditCard()
+      number: string;
+
+      @ApiProperty({ example: '12/26', description: 'MM/YY format' })
+      @Matches(/^(0[1-9]|1[0-2])\/\d{2}$/, { message: 'Expiry must be in MM/YY format' })
+      expiry: string;
+
+      @ApiProperty({ example: '123' })
+      @Matches(/^\d{3,4}$/, { message: 'CVC must be 3 or 4 digits' })
+      cvc: string;
+}
 
 export class CreateTransactionDto {
 
-      // @ApiProperty({
-      //       description: 'User ID who created the transaction',
-      //       example: '64fa1234567890abcdef1234',
-      // })
-      // @IsMongoId({ message: 'Invalid MongoDB ObjectId' })
-      // @IsNotEmpty()
-      // userId!: string; 
-
       @ApiProperty({
-            description: 'Aype of advertiser',
-            example: AdvertiserType.CARRENTAL,
-            enum: AdvertiserType,
+      example: PaymentMethod.CREDIT_CARD,
+      description: 'วิธีชำระเงิน',
+      enum: PaymentMethod,
       })
-      @IsEnum(AdvertiserType, {
-            message:`adType must be a valid AdvertiserType value: ${Object.values(AdvertiserType).join(', ')}`,
-      })
-      @IsNotEmpty({ message: 'adType should not be empty' })
-      adType!: AdvertiserType; 
+      @IsEnum(PaymentMethod)
+      method: PaymentMethod;
 
-      @ApiProperty({
-            description: 'Duration of the ad in days',
-            example: AdDuration.DAYS_7,
-            enum: AdDuration,
+      @ApiPropertyOptional({
+      description: 'ข้อมูลบัตรเครดิต (ถ้าใช้ Credit Card)',
+      example: {
+            holder: 'John Doe',
+            email: 'john@example.com',
+            number: '4111111111111111',
+            expiry: '12/26',
+            cvc: '123',
+      }
       })
-      @IsEnum(AdDuration, {
-            message: `adDuration must be one of: ${Object.values(AdDuration).join(', ')}`,
-      })
-      @IsNotEmpty()
-      adDuration!: AdDuration;
 
-      @ApiProperty({
-            description: 'Transaction amount',
-            example: 50,
-      })
-      @IsNumber()
-      @IsPositive()
-      @IsNotEmpty()
-      amount!: number;
-
-      @ApiProperty({
-            description: 'Payment method',
-            example: PaymentMethod.PROMPTPAY,
-            enum: PaymentMethod,
-      })
-      @IsEnum(PaymentMethod, {
-            message:'Method must be either Visa, MasterCard, QR Payment, PromptPay or Mobile Banking',
-      })
-      @IsNotEmpty()
-      method!: PaymentMethod;
+      @IsOptional()
+      @IsObject()
+      cardInfo?:CardInfoDto;
 }
+
+
+

@@ -1,0 +1,19 @@
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AdService } from './ad.service';
+import { AdController } from './ad.controller';
+import { Ad, AdSchema } from '../schemas/ad.schema';
+import { TransactionModule } from 'src/transaction/transaction.module';
+
+@Module({
+
+  imports: [
+    MongooseModule.forFeature([{ name: Ad.name, schema: AdSchema }]),
+    TransactionModule, 
+  ],
+
+  controllers: [AdController],
+  providers: [AdService],
+  exports: [AdService],
+})
+export class AdModule {}
