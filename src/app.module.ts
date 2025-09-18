@@ -7,10 +7,11 @@ import { PlacesModule } from './places/places.module';
 import { PlansModule } from './plans/plans.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { JwtModule } from '@nestjs/jwt';
 import { TransactionModule } from './transaction/transaction.module';
+import { JwtModule } from '@nestjs/jwt';
 import { TransportModule } from './transport/transportMethod.module';
 import { TagsModule } from './tags/tags.module';
+import { AdModule } from './ad/ad.module';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { TagsModule } from './tags/tags.module';
     UsersModule,
     TransactionModule,
     TransportModule,
-    TagsModule,],
+    TagsModule,
+    AdModule,],
   controllers: [AppController],
   providers: [AppService],
 })
