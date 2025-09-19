@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory,  } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument , Types } from 'mongoose';
 
 export type TransportMethodDocument = HydratedDocument<TransportMethod>;
 
@@ -18,11 +18,19 @@ export class TransportMethod {
       @Prop({default:false})
       hasBooking: boolean;
 
-      @Prop()//required ObjectId in the future
-      providerId?: string;
+      @Prop({ required: true })
+      price: number;
 
-      // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Provider', required: true })
-      // providerId: mongoose.Types.ObjectId;
+      @Prop({ required: true })
+      speed: number;
+
+      @Prop({ type: Types.ObjectId, ref: 'User' })
+      providerId?: Types.ObjectId;
+
+      @Prop({ required: true })
+      routeId: string;
+      
+
 }
 
 export const TransportMethodSchema = SchemaFactory.createForClass(TransportMethod);

@@ -10,11 +10,32 @@ export class TransportMethodController {
   @Post()
   async create(@Body() dto: CreateTransportMethodDto) {
     const created = await this.transportService.create(dto);
+    return { data: created };
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const transport = await this.transportService.findOne(id);
+    return { data: transport };
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    const deleted = await this.transportService.remove(id);
     return {
-      message: 'TransportMethod created successfully',
-      status: HttpStatus.CREATED,
-      data: created,
+      message: 'TransportMethod deleted',
+      data: deleted,
     };
+  }
+
+  @Get('route/:routeId')
+  async findByRouteId(@Param('routeId') routeId: string) {
+    return this.transportService.findByRouteId(routeId);
+  }
+
+  @Delete('route/:routeId')
+  async deleteByRouteId(@Param('routeId') routeId: string) {
+    return this.transportService.deleteByRouteId(routeId);
   }
 
   @Get()
@@ -24,36 +45,6 @@ export class TransportMethodController {
       message: 'All TransportMethods fetched',
       status: HttpStatus.OK,
       data: transports,
-    };
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const transport = await this.transportService.findOne(id);
-    return {
-      message: 'TransportMethod fetched',
-      status: HttpStatus.OK,
-      data: transport,
-    };
-  }
-
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateTransportMethodDto) {
-    const updated = await this.transportService.update(id, dto);
-    return {
-      message: 'TransportMethod updated',
-      status: HttpStatus.OK,
-      data: updated,
-    };
-  }
-
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    const deleted = await this.transportService.remove(id);
-    return {
-      message: 'TransportMethod deleted',
-      status: HttpStatus.OK,
-      data: deleted,
     };
   }
 }
