@@ -14,7 +14,7 @@ export class Plan{
 
     @Prop({ required: true, type: [Number], validate: {
       validator: (value: number[]) => value.length == 2,
-      message: 'Destination must contain longitude and latitude.',
+      message: 'Destination must contain longitude and latitude of destination.',
     }})
     destination: number[];
 

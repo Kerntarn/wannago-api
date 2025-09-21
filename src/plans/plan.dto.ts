@@ -10,8 +10,8 @@ export class CreatePlanDto {
     @IsNotEmpty()
     @IsArray()
     @IsNumber({}, { each: true })
-    @ArrayMinSize(2, { message: 'Give me longitude and latitude'})
-    @ArrayMaxSize(2, { message: 'Give me longitude and latitude'})
+    @ArrayMinSize(2, { message: 'Give me longitude and latitude of source'})
+    @ArrayMaxSize(2, { message: 'Give me longitude and latitude of source'})
     source: number[];
 
     @ApiProperty()
