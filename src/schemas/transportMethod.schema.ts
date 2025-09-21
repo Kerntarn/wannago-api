@@ -3,7 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 export type TransportMethodDocument = HydratedDocument<TransportMethod>;
 
-@Schema({timestamps: true })
+@Schema({timestamps: true, versionKey: false})
 export class TransportMethod {
 
       @Prop({ required: true })

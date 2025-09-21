@@ -3,13 +3,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
+import { User } from 'src/schemas/user.schema';
 
 @Injectable()
 export class PlacesService {
   constructor(@InjectModel(Place.name) private placeModel: Model<PlaceDocument>) {}
 
-  async create(data: any, type: string): Promise<Place> {
-    const currentUserId = "001";
+  async create(data: any, type: string, user: User): Promise<Place> {
+    if (!user) throw new UnauthorizedException('User need token to create place');
+    const currentUserId = user["userId"];
     const place = new this.placeModel({ ...data, providerId: currentUserId, type: type});
     return place.save();
   }

@@ -4,7 +4,7 @@ import { TransactionStatus, PaymentMethod } from '../transaction/transaction.ass
 //what pattern will the data be saved in db
 export type TransactionDocument = HydratedDocument<Transaction>;
 
-@Schema({timestamps: true })
+@Schema({timestamps: true, versionKey: false})
 export class Transaction {
 
       @Prop({ required: true, type: Types.ObjectId, ref: 'User' })

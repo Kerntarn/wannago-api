@@ -11,6 +11,7 @@ import { TransactionModule } from './transaction/transaction.module';
 import { JwtModule } from '@nestjs/jwt';
 import { TransportModule } from './transport/transportMethod.module';
 import { TagsModule } from './tags/tags.module';
+import { SeedModule } from './seed/seed.module';
 import { AdModule } from './ad/ad.module';
 
 @Module({
@@ -40,6 +41,7 @@ import { AdModule } from './ad/ad.module';
     TransactionModule,
     TransportModule,
     TagsModule,
+    SeedModule,
     AdModule,],
   controllers: [AppController],
   providers: [AppService],

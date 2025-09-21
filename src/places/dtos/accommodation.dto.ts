@@ -1,5 +1,5 @@
 import { ApiProperty, IntersectionType, PartialType } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsUrl, Max, Min } from 'class-validator';
 import { CreatePlaceDto } from './place.dto';
 // What we expect when receiving request
 
@@ -10,11 +10,14 @@ export class CreateAccommodationDto extends CreatePlaceDto{
 
     @ApiProperty()
     @IsNotEmpty()
+    @Min(0)
+    @Max(5)
     starRating: number;
     
     @ApiProperty()
-    @IsNotEmpty()
-    redirectUrl: string;
+    @IsOptional()
+    @IsUrl()
+    redirectUrl?: string;
 }
 
 export class UpdateAccommodationDto extends IntersectionType(
