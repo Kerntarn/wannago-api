@@ -14,7 +14,7 @@ export class SeedService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(TransportMethod.name) private transportModel: Model<TransportMethodDocument>,
   ) {}
-
+  // use 'npm run seed'
   async run() {
     await Promise.all([
         this.userModel.deleteMany({}),

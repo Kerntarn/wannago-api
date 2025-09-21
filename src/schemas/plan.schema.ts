@@ -6,12 +6,18 @@ export type planDocument = HydratedDocument<Plan>;
 
 @Schema({ versionKey: false })
 export class Plan{
-    @Prop( {required: true})
-    name: string;
+    @Prop()
+    name: string; // Removed `required: true` since it is auto-filled in the pre-save middleware
 
-    @Prop( {required: true})
-    destination: string;
-    
+    @Prop( {required: true, type: [Number]})
+    source: number[];
+
+    @Prop({ required: true, type: [Number], validate: {
+      validator: (value: number[]) => value.length == 2,
+      message: 'Destination must contain longitude and latitude of destination.',
+    }})
+    destination: number[];
+
     @Prop( {required: true, type: Date})
     startTime: Date;
     
@@ -19,12 +25,12 @@ export class Plan{
     endTime: Date;
     
     @Prop( {required: true})
-    tags: string[];
+    preferredTags: string[];
     
     @Prop( {required: true})
     budget: number;
     
-    @Prop( {required: true})
+    @Prop( {required: true, default: 1})
     groupSize: number;
     
     @Prop( {required: true })
