@@ -1,0 +1,92 @@
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException } from '@nestjs/common';
+import { AdService } from './ad.service';
+import { CreateAdDto } from './dtos/create-ad.dto';
+import { UpdateAdDto } from './dtos/update-ad.dto';
+
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/role.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../schemas/user.schema';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+
+@Controller('ad')
+export class AdController {
+  constructor(private readonly adService: AdService) {}
+
+
+  //สร้าง add
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
+  @Post()
+  async create(@CurrentUser() user: any,@Body() createAdDto: CreateAdDto) {
+    const userId = user._id;
+    const ad = await this.adService.createAd(userId, createAdDto);
+    return {data: ad};
+  }
+
+  //เอาทุก ads ของ user
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
+  @Get()
+  async getAllAds(@CurrentUser() user: any) {
+    const userId = user._id;
+    const ads = await this.adService.getAllAdsByUser(userId);
+    return { data: ads };
+  }
+
+  //ลบ ad by id
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
+  @Delete(':adId')
+  async deleteAd(@CurrentUser() user: any, @Param('adId') adId: string) {
+    const ownerId = user._id;
+    return this.adService.deleteAd(adId, ownerId);
+  }
+
+  //all stat
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
+  @Get('stats')
+  async getAllAdsStats(@CurrentUser() user: any) {
+    const ownerId = user._id; 
+    const stats = await this.adService.getAllAdsStats(ownerId);
+    return stats;
+  }
+
+  //ad stat
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
+  @Get(':adId/stats')
+  async getAdStats(@Param('adId') adId: string) {
+    const adStats = await this.adService.getAdStats(adId);
+    if (!adStats) {
+      throw new NotFoundException('Ad stats not found');
+    }
+    return adStats;
+  }
+
+  @Patch(':id/view')
+  async addView(@Param('id') id: string) {
+    const ad = await this.adService.incrementViews(id);
+    return { data: ad };
+  }
+
+  @Patch(':id/click')
+  async addClick(@Param('id') id: string) {
+    const ad = await this.adService.incrementClicks(id);
+    return { data: ad };
+  }
+
+  @Patch(':id/contacts')
+  async addContacts(@Param('id') id: string) {
+    const ad = await this.adService.incrementContacts(id);
+    return { data: ad };
+  }
+
+  @Patch(':id/bookings')
+  async addBookings(@Param('id') id: string) {
+    const ad = await this.adService.incrementBookings(id);
+    return { data: ad };
+  }
+  
+}
