@@ -1,22 +1,42 @@
-import { Controller, Get, UseGuards, Request, Post } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/role.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserRole } from 'src/schemas/user.schema';
+import { UpdateUserDto } from './dto/update-user.dto';
+
 @Controller('users')
 export class UsersController {
     constructor(private readonly userservice: UsersService) {}
 
-  @Get('profile')
-  @UseGuards(JwtAuthGuard)
+  @Get('')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
   getProfile(@CurrentUser() user) {
-    return {
-      id: user.userId,
-      email: user.email,
-      userName: user.username,
-      role: user.role, // เพิ่ม role ได้ด้วย
-    };
+    console.log(user);
+    return user;
   }
 
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
+  editProfile(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.userservice.update(id, updateUserDto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  deleteUser(@Param('id') id: string) {
+    return this.userservice.remove(id);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
+  getUserById(@Param('id') id: string) {
+    return this.userservice.findById(id);
+  }
 }
