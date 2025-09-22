@@ -16,17 +16,6 @@ export class TagsService {
     "digital-nomad"
   ],
 
-  "transportation": [
-    "motorbike",
-    "car",
-    "van",
-    "tour-bus",
-    "bicycle",
-    "walking",
-    "self-drive",
-    "road-trip"
-  ],
-
   "accommodation": [
     "hotel",
     "resort",
@@ -117,13 +106,5 @@ export class TagsService {
 };
   findAll() {
     return this.tags;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} tag`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} tag`;
   }
 }

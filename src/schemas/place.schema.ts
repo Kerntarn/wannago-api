@@ -3,14 +3,14 @@ import mongoose, { HydratedDocument, ObjectId } from 'mongoose';
 //what pattern will the data be saved in db
 export type PlaceDocument = HydratedDocument<Place>;
 @Schema({
-  discriminatorKey: 'type', collection: 'places'
+  discriminatorKey: 'type', collection: 'places', versionKey: false
 })
 export class Place {
   @Prop( { required: true } )
   name: string;
 
   @Prop( { type: String })
-  imageUrl: string
+  imageUrl?: string
 
   @Prop( { required: true, type: [Number] } )
   location: number[];
