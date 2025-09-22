@@ -1,4 +1,4 @@
-import { IsEmail, IsString, Length, MinLength, IsOptional, IsPhoneNumber } from 'class-validator';
+import { IsEmail, IsString, Length, MinLength, IsOptional, IsPhoneNumber, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Match } from '../decorators/match.decorator';
 
@@ -12,6 +12,12 @@ export class RegisterDto {
     @MinLength(8)
     password: string;
 
+    @ApiProperty({ minLength: 8 })
+    @IsString()
+    @MinLength(8)
+    @Match('password', { message: 'Passwords do not match' })
+    confirmPassword: string;
+    
     @ApiProperty({ minLength: 2, maxLength: 50 })
     @IsString()
     @Length(2, 50)
@@ -36,4 +42,14 @@ export class RegisterDto {
     @IsOptional()
     @IsPhoneNumber('TH')
     phoneNumber?: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    planId?: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    guestToken?: string;
 }

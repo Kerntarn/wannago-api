@@ -4,15 +4,29 @@ import { Model } from 'mongoose';
 import { CreatePlanDto } from 'src/plans/plan.dto';
 import { UpdatePlanDto } from 'src/plans/plan.dto';
 import { Plan, planDocument } from 'src/schemas/plan.schema';
+import { GuestService } from 'src/guest/guest.service';
 
 @Injectable()
 export class PlansService {
-  constructor(@InjectModel(Plan.name) private planModel: Model<planDocument>) {}
+  constructor(
+    @InjectModel(Plan.name) private planModel: Model<planDocument>,
+    private guestService: GuestService,
+  ) {}
 
-  create(createPlanDto: CreatePlanDto) {
-    const currentUserId = "002";
-    const newPlan = new this.planModel({ ...createPlanDto, ownerId: currentUserId});
+  create(createPlanDto: CreatePlanDto, userId: string) {
+    const newPlan = new this.planModel({ ...createPlanDto, ownerId: userId});
     return newPlan.save();
+  }
+
+  async createTemporary(createPlanDto: CreatePlanDto, guestId: string) {
+    const newPlan = new this.planModel({ ...createPlanDto, guestId });
+    const savedPlan = await newPlan.save();
+    await this.guestService.addPlanToGuest(guestId, savedPlan._id);
+    return savedPlan;
+  }
+
+  async assignPlanToUser(planId: string, userId: string) {
+    return this.planModel.findByIdAndUpdate(planId, { ownerId: userId }).exec();
   }
 
   findAll() {
