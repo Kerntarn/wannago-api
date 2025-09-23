@@ -21,6 +21,6 @@ import { Restaurant, RestaurantSchema } from 'src/schemas/restaurant.schema';
   }])],
   controllers: [PlacesController],
   providers: [PlacesService],
-  exports: [MongooseModule],
+  exports: [MongooseModule, PlacesService],
 })
 export class PlacesModule {}
