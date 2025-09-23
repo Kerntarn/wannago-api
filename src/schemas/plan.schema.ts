@@ -33,8 +33,11 @@ export class Plan{
     @Prop( {required: true, default: 1})
     groupSize: number;
     
-    @Prop( {required: true })
+    @Prop( {required: false })
     ownerId: string;
+
+    @Prop({ required: false })
+    guestId: string;
 
 }
 

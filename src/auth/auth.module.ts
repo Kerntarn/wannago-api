@@ -4,12 +4,17 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
-import { PassportModule } from '@nestjs/passport';  
+import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { PlansModule } from 'src/plans/plans.module';
+import { GuestModule } from 'src/guest/guest.module';
+import { GuestAuthStrategy } from './strategies/guest-auth.strategy';
 
 @Module({
   imports: [
     UsersModule,
+    PlansModule,
+    GuestModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret: configService.getOrThrow<string>('JWT_SECRET'),
@@ -18,7 +23,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, GuestAuthStrategy],
   controllers: [AuthController],
   exports: [AuthService],
 })

@@ -1,0 +1,49 @@
+sequenceDiagram
+    actor User
+
+    box Client
+        participant LoginPage
+        participant RegisterPage
+        participant Form
+    end
+
+    box Backend
+        participant API as NestJS API
+        participant DB as MongoDB
+    end
+
+    %% --- Register Flow ---
+    User ->> RegisterPage: Open Register Page
+    RegisterPage ->> Form: Fill {email, password, firstName, lastName, username, profileImage, phonenumber}
+
+    alt Form Filled
+        Form ->> API: POST /auth/register
+        API ->> DB: Insert new user document
+        DB -->> API: Success
+        API -->> Form: Registration successful (201 Created)
+    else Form Not Filled
+        Form ->> Form: Show alert "Please fill all required fields"
+    end
+
+    %% --- Login Flow ---
+    User ->> LoginPage: Open Login Page
+    LoginPage ->> Form: Fill {email, password}
+    Form ->> API: POST /auth/login
+    API ->> DB: Find user by email
+
+    alt User Found
+        DB -->> API: Return user document
+        API ->> API: Validate password (bcrypt)
+
+        alt Password Valid
+            API ->> API: Generate JWT token
+            API -->> Form: Login successful { access_token }
+            Form -->> LoginPage: Save token (localStorage/session)
+            LoginPage -->> User: Redirect to dashboard/profile
+        else Password Invalid
+            API -->> Form: 401 Unauthorized
+        end
+    else User Not Found
+        DB -->> API: No record
+        API -->> Form: 404 Unauthorized
+    end
