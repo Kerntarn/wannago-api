@@ -36,21 +36,27 @@ export class Ad {
   @Prop({ type: [String], default: [] }) 
   targetAudience?: string[]; 
   
+  //++++
   @Prop({ required: true, type: Number }) 
   durationDays: number; // ระยะเวลาโฆษณา (วัน)
   
+   //++++
   @Prop({ required: true, type: Number }) 
   price: number; 
   
+   //++++
   @Prop({ required: true , type: Types.ObjectId, ref: 'User'}) 
   owner: Types.ObjectId;
 
+   //++++
   @Prop({ required: true , type: Types.ObjectId, ref: 'Place'})
   place: Types.ObjectId;
   
+   //++++
   @Prop({ type: String, enum: ['draft','pending_payment','active','inactive'], default: 'draft' }) 
   status: string;
   
+   //++++
   @Prop() 
   expireAt?: Date;
 
