@@ -11,12 +11,6 @@ export class RegisterDto {
     @IsString()
     @MinLength(8)
     password: string;
-
-    @ApiProperty({ minLength: 8 })
-    @IsString()
-    @MinLength(8)
-    @Match('password', { message: 'Passwords do not match' })
-    confirmPassword: string;
     
     @ApiProperty({ minLength: 2, maxLength: 50 })
     @IsString()
