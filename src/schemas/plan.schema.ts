@@ -7,7 +7,7 @@ export type planDocument = HydratedDocument<Plan>;
 @Schema({ versionKey: false })
 export class Plan{
     @Prop()
-    name: string; // Removed `required: true` since it is auto-filled in the pre-save middleware
+    name?: string; // Removed `required: true` since it is auto-filled in the pre-save middleware
 
     @Prop( {required: true, type: [Number]})
     source: number[];
@@ -31,14 +31,10 @@ export class Plan{
     budget: number;
     
     @Prop( {required: true, default: 1})
-    groupSize: number;
+    groupSize?: number;
     
     @Prop( {required: false })
     ownerId: string;
-
-    @Prop({ required: false })
-    guestId: string;
-
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);
