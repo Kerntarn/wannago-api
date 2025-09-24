@@ -5,6 +5,7 @@ import { AdController } from './ad.controller';
 import { Ad, AdSchema } from '../schemas/ad.schema';
 import { Place, PlaceSchema } from 'src/schemas/place.schema';
 import { TransactionModule } from 'src/transaction/transaction.module';
+import { PlacesModule } from 'src/places/places.module';
 
 @Module({
 
@@ -12,6 +13,7 @@ import { TransactionModule } from 'src/transaction/transaction.module';
     MongooseModule.forFeature([{ name: Ad.name, schema: AdSchema }]),
     MongooseModule.forFeature([{ name: Place.name, schema: PlaceSchema }]),
     TransactionModule, 
+    PlacesModule
   ],
 
   controllers: [AdController],

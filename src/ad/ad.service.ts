@@ -5,6 +5,8 @@ import { Ad, AdDocument } from '../schemas/ad.schema';
 import { Transaction, TransactionDocument } from '../schemas/transaction.schema';
 import { Place, PlaceDocument } from '../schemas/place.schema';
 import { CreateAdDto } from './dtos/create-ad.dto';
+import { PlacesService } from 'src/places/places.service';
+
 
 @Injectable()
 export class AdService {
@@ -13,12 +15,14 @@ export class AdService {
     @InjectModel(Ad.name) private adModel: Model<AdDocument>,
     @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
     @InjectModel(Place.name) private placeModel: Model<Place>,
+    private readonly placesService: PlacesService
   ) {}
 
   //สร้าง
-  async createAd(ownerId: string, createAdDto: CreateAdDto) {
-  
-    const place = await this.placeModel.create({
+  async createAd(ownerId: string, createAdDto: CreateAdDto) { //แก้
+    
+    // ตัดความซ้ำซ้อนกับ place ดึง id place มาเลย 
+    const place = await this.placeModel.create({ 
       name: createAdDto.name,
       imgaeUrl: createAdDto.images,
       location: createAdDto.location,

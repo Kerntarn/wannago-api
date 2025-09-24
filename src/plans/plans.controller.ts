@@ -8,6 +8,7 @@ import { User } from 'src/schemas/user.schema';
 import { GuestAuthGuard } from 'src/auth/guards/guest-auth.guard';
 import { CurrentGuest } from 'src/auth/decorators/current-guest.decorator';
 import { GuestDocument } from 'src/schemas/guest.schema';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('plans')
 export class PlansController {
@@ -20,6 +21,7 @@ export class PlansController {
   }
 
   @UseGuards(GuestAuthGuard)
+  @ApiBearerAuth('guest-jwt')
   @Post('temporary')
   createTemporary(@Body() createPlanDto: CreatePlanDto, @CurrentGuest() guest: GuestDocument) {
     return this.plansService.createTemporary(createPlanDto, guest.guestId);

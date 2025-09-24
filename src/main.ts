@@ -19,6 +19,11 @@ async function bootstrap() {
       scheme: 'bearer',
       bearerFormat: 'JWT',
     }, 'jwt')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    }, 'guest-jwt')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/swagger/api', app, document);
