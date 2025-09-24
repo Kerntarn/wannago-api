@@ -11,6 +11,10 @@ export class PlacesService {
 
   async create(data: any, type: string, user: User): Promise<Place> {
     if (!user) throw new UnauthorizedException('User need token to create place');
+    
+    //extract Latitude and Longitude from url
+    // And Make ._toEntity()
+
     const currentUserId = user["userId"];
     const place = new this.placeModel({ ...data, providerId: currentUserId, type: type});
     return place.save();
@@ -32,6 +36,11 @@ export class PlacesService {
 
   findOne(id: string) {
     return this.placeModel.findById(id).exec();
+  }
+
+  async findByName(name: string): Promise<Place[]> {
+    const places = await this.placeModel.find({ name: new RegExp(name, 'i') }).exec();
+    return places;
   }
 
   async update(id: string, data: any, type: string, userId: ObjectId) {
