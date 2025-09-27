@@ -57,24 +57,6 @@ export class PlansService {
   }
 
 
-  async _getMostRelatedPlace(places: Place[], preferredTags: string[]): Promise<Place> {
-    const tags = this.tagsService.getWeight();
-    
-    const result = places.map(place => {
-      const score = place.tags.map(tag => {
-        return (preferredTags.includes(tag) ? tags[tag] : 0);
-      });
-      return { ...place, score };
-    });
-
-    result.sort((a, b) => {
-      const sumA = a.score.reduce((acc, curr) => acc + curr, 0);
-      const sumB = b.score.reduce((acc, curr) => acc + curr, 0);
-      return sumB - sumA;
-    });
-    return places[0];
-  }
-
   async _toEntity(dto: CreatePlanDto): Promise<Plan> {
     const allTags = await this.tagsService.findAll();
     if (!dto.preferredTags.every(tag => allTags.includes(tag))) {
@@ -86,7 +68,7 @@ export class PlansService {
       places = await this.placesService.findAll();
     }
 
-    const dst = await this._getMostRelatedPlace(places, dto.preferredTags);
+    const dst = await this.placesService.getMostRelatedPlace(places, dto.preferredTags);
     if (!dst) {
       throw new BadRequestException('Unable to identify destination place');
     }

@@ -35,6 +35,7 @@ export class Plan{
     
     @Prop( {required: false })
     ownerId: string;
+
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);
