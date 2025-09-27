@@ -42,6 +42,7 @@ export class AuthService {
                     }
                 }
             }
+            await this.guestService.deleteGuest(guestId);
         }
 
         return {
@@ -78,7 +79,7 @@ export class AuthService {
                     }
                 }
                 // Optionally delete guest record after plans are transferred
-                // await this.guestService.deleteGuest(guestId);
+                await this.guestService.deleteGuest(guestId);
             }
         }
 

@@ -1,5 +1,5 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, MaxLength, MinLength } from 'class-validator';
 // What we expect when receiving request
 
 export class CreatePlaceDto {
@@ -13,11 +13,8 @@ export class CreatePlaceDto {
     
     @ApiProperty()
     @IsNotEmpty()
-    @IsArray()
-    @IsNumber({}, { each: true })
-    @ArrayMinSize(2, { message: 'Give me longitude and latitude'})
-    @ArrayMaxSize(2, { message: 'Give me longitude and latitude'})
-    location: number[];
+    @IsUrl()
+    location: string;
     
     @ApiProperty()
     @IsNotEmpty()

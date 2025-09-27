@@ -15,6 +15,7 @@ export class PlansController {
   constructor(private readonly plansService: PlansService) {}
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt')
   @Post()
   create(@Body() createPlanDto: CreatePlanDto, @CurrentUser() user: User) {
     return this.plansService.create(createPlanDto, user._id.toString());
@@ -26,7 +27,14 @@ export class PlansController {
   createTemporary(@Body() createPlanDto: CreatePlanDto, @CurrentGuest() guest: GuestDocument) {
     return this.plansService.createTemporary(createPlanDto, guest.guestId);
   }
-
+  
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth('jwt')
+  // @Post('save')
+  // save(@Body() savePlanDto: SavePlanDto, @CurrentUser() user: User) {
+  //   return this.plansService.save(savePlanDto, user._id.toString());
+  // }
+ 
   @Get()
   findAll() {
     return this.plansService.findAll();
