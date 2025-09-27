@@ -1,66 +1,30 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { AdStatus } from 'src/ad/ad.asset';
 
 export type AdDocument = HydratedDocument<Ad> & { createdAt: Date; updatedAt: Date };
 
 @Schema({ timestamps: true })
 export class Ad {
-  
-  @Prop({ required: true }) 
-  name: string; 
 
-  @Prop({ required: true }) 
-  category: string; 
+  @Prop({ required: true , type: Types.ObjectId, ref: 'User'}) 
+  providerId: Types.ObjectId;
 
-  @Prop() 
-  description?: string; 
-
-  @Prop() 
-  details?: string; 
+  @Prop({ required: true , type: Types.ObjectId, ref: 'Place'})
+  placeId: Types.ObjectId;
   
-  @Prop() 
-  address?: string; 
-  
-  @Prop({ type: [Number], default: [0,0] }) 
-  location?: [number, number]; // พิกัด [longitude, latitude]
-  
-  @Prop() 
-  website?: string; 
-  
-  @Prop({ type: [String], default: [] }) 
-  images?: string[]; 
-  
-  @Prop() 
-  promotion?: string; 
-  
-  @Prop({ type: [String], default: [] }) 
-  targetAudience?: string[]; 
-  
-  //++++
   @Prop({ required: true, type: Number }) 
-  durationDays: number; // ระยะเวลาโฆษณา (วัน)
+  durationDays: number;
   
-   //++++
   @Prop({ required: true, type: Number }) 
   price: number; 
   
-   //++++
-  @Prop({ required: true , type: Types.ObjectId, ref: 'User'}) 
-  owner: Types.ObjectId;
-
-   //++++
-  @Prop({ required: true , type: Types.ObjectId, ref: 'Place'})
-  place: Types.ObjectId;
-  
-   //++++
-  @Prop({ type: String, enum: ['draft','pending_payment','active','inactive'], default: 'draft' }) 
+  @Prop({ type: String, enum: AdStatus, default: AdStatus.PENDING}) 
   status: string;
   
-   //++++
   @Prop() 
   expireAt?: Date;
 
-  //statics
   @Prop({ default: 0 }) 
   views: number;
 

@@ -11,7 +11,7 @@ export class PlacesService {
 
   async create(data: any, type: string, user: User): Promise<Place> {
     if (!user) throw new UnauthorizedException('User need token to create place');
-    const currentUserId = user["userId"];
+    const currentUserId = user._id;
     const place = new this.placeModel({ ...data, providerId: currentUserId, type: type});
     return place.save();
   }

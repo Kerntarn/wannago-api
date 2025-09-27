@@ -8,11 +8,12 @@ import { RolesGuard } from '../auth/guards/role.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../schemas/user.schema';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('jwt') 
 @Controller('ad')
 export class AdController {
   constructor(private readonly adService: AdService) {}
-
 
   //สร้าง add
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -24,14 +25,15 @@ export class AdController {
     return {data: ad};
   }
 
-  //เอาทุก ads ของ user
+  //ดู dash board มีสถิติ กราฟ ตารางสถานะ
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USER)
   @Get()
-  async getAllAds(@CurrentUser() user: any) {
+  async get(@CurrentUser() user: any) {
     const userId = user._id;
-    const ads = await this.adService.getAllAdsByUser(userId);
-    return { data: ads };
+    const data = await this.adService.getAllAds(userId);
+    console.log("----------------->",userId);
+    return { data };
   }
 
   //ลบ ad by id
@@ -43,22 +45,13 @@ export class AdController {
     return this.adService.deleteAd(adId, ownerId);
   }
 
-  //all stat
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
-  @Get('stats')
-  async getAllAdsStats(@CurrentUser() user: any) {
-    const ownerId = user._id; 
-    const stats = await this.adService.getAllAdsStats(ownerId);
-    return stats;
-  }
-
   //ad stat
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USER)
-  @Get(':adId/stats')
-  async getAdStats(@Param('adId') adId: string) {
-    const adStats = await this.adService.getAdStats(adId);
+  @Get(':adId')
+  async getAdById(@CurrentUser() user: any, @Param('adId') adId: string) {
+    const ownerId = user._id;
+    const adStats = await this.adService.getAdById(ownerId, adId);
     if (!adStats) {
       throw new NotFoundException('Ad stats not found');
     }

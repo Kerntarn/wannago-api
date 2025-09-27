@@ -8,6 +8,10 @@ import { CreateAttractionDto, UpdateAttractionDto } from 'src/places/dtos/attrac
 import { ApiBearerAuth, ApiExtraModels } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/role.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../schemas/user.schema';
+
 
 @Controller('places')
 @UseGuards(JwtAuthGuard)
@@ -21,11 +25,15 @@ export class PlacesController {
     const place = this.placesService.create(createAccommodatinDto, 'Accommodation', user);
     return place;
   }
+  
   @Post('attraction')
   createAtt(@Body() createAttractionDto: CreateAttractionDto, @CurrentUser() user) {
     const place = this.placesService.create(createAttractionDto, 'Attraction', user);
     return place;
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
   @Post('restaurant')
   createRes(@Body() createRestaurantDto: CreateRestaurantDto, @CurrentUser() user) {
     const place = this.placesService.create(createRestaurantDto, 'Restaurant', user);

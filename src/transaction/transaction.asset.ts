@@ -14,10 +14,11 @@ export const TransactionMessages = {
 };
 
 export enum TransactionStatus {
-      PENDING = 'Pending',  
-      SUCCESS = 'Success',   
-      FAILED = 'Failed',     
-      CANCELLED = 'Cancelled', 
+      PENDING = 'pending', 
+      PROCESSING = 'processing', 
+      SUCCESS = 'success',   
+      FAILED = 'failed',     
+      CANCELLED = 'cancelled', 
 }
 
 export enum PaymentMethod {

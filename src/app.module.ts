@@ -13,6 +13,8 @@ import { TransportModule } from './transport/transportMethod.module';
 import { TagsModule } from './tags/tags.module';
 import { SeedModule } from './seed/seed.module';
 import { AdModule } from './ad/ad.module';
+import { ScheduleModule } from '@nestjs/schedule';
+//import { AdsCronModule } from './ads-cron/ads-cron.module';
 
 @Module({
   imports: [
@@ -42,7 +44,9 @@ import { AdModule } from './ad/ad.module';
     TransportModule,
     TagsModule,
     SeedModule,
-    AdModule,],
+    AdModule,
+    ScheduleModule.forRoot(),],
+    //AdsCronModule,],
   controllers: [AppController],
   providers: [AppService],
 })

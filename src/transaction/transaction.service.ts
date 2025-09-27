@@ -34,7 +34,7 @@ export class TransactionService {
         userId: new Types.ObjectId(userId) ,
         adId: new Types.ObjectId(adId) ,
         amount: ad.price,
-        status: 'success', // mock payment
+        status: TransactionStatus.SUCCESS, // mock payment
         payDate: new Date(),
         method: createDto.method,
         cardInfo: createDto.cardInfo
@@ -43,9 +43,9 @@ export class TransactionService {
       await transaction.save();
 
       // อัปเดต Ad
-      ad.status = 'active';
-      ad.expireAt = new Date(Date.now() + ad.durationDays * 24*60*60*1000);
-      await ad.save();
+      // ad.status = 'active';
+      // ad.expireAt = new Date(Date.now() + ad.durationDays * 24*60*60*1000);
+      // await ad.save();
 
       const formatted = {
         _id: transaction._id,
