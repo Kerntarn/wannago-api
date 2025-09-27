@@ -2,11 +2,7 @@ import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class CreatePlanDto {
-    @ApiProperty()
-    @IsOptional()
-    name?: string;
-
-    @ApiProperty()
+    @ApiProperty({ example: [100.5018, 13.7563], description: 'Give me longitude and latitude of source', type: [Number]})
     @IsNotEmpty()
     @IsArray()
     @IsNumber({}, { each: true })
@@ -14,16 +10,16 @@ export class CreatePlanDto {
     @ArrayMaxSize(2, { message: 'Give me longitude and latitude of source'})
     source: number[];
 
-    @ApiProperty()
+    @ApiProperty( {example: 'พัทยา'})
     @IsOptional()
     destination?: string;
-    
-    @ApiProperty({format: 'date-time', example: '1970-01-01T20:00:00+07:00',})
+
+    @ApiProperty({format: 'date-time', example: new Date(),})
     @IsOptional()
     @IsDateString()
     startTime?: Date;
     
-    @ApiProperty({format: 'date-time', example: '1970-01-01T20:00:00+07:00',})
+    @ApiProperty({format: 'date-time', example: new Date(),})
     @IsOptional()
     @IsDateString()
     endTime?: Date;
@@ -33,17 +29,17 @@ export class CreatePlanDto {
     @Min(0)
     budget?: number;
     
-    @ApiProperty()
+    @ApiProperty({example: 1})
     @IsOptional()
     @Min(1)
     groupSize?: number;
 
-    @ApiProperty()
+    @ApiProperty({example: ['Personal Car', 'Taxi']})
     @IsOptional()
-    @IsString({each: true}) 
-    transitId: string[];
+    @IsString( {each: true} ) 
+    transit: string[];
 
-    @ApiProperty()
+    @ApiProperty({example: ["solo-travel"]})
     @IsNotEmpty()
     @IsString({each: true})
     @ArrayMinSize(1)
