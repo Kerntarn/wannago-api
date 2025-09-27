@@ -10,7 +10,6 @@ import { TagsService } from 'src/tags/tags.service';
 import { Place } from 'src/schemas/place.schema';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-// @UseGuards(JwtAuthGuard)
 @Injectable()
 export class PlansService {
   constructor(
