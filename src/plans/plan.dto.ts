@@ -1,34 +1,49 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class CreatePlanDto {
-    @ApiProperty()
-    @IsOptional()
-    name?: string;
-    
-    @ApiProperty()
+    @ApiProperty({ example: [100.5018, 13.7563], description: 'Give me longitude and latitude of source', type: [Number]})
     @IsNotEmpty()
-    destination: string;
-    
-    @ApiProperty()
+    @IsArray()
+    @IsNumber({}, { each: true })
+    @ArrayMinSize(2, { message: 'Give me longitude and latitude of source'})
+    @ArrayMaxSize(2, { message: 'Give me longitude and latitude of source'})
+    source: number[];
+
+    @ApiProperty( {example: 'พัทยา'})
     @IsOptional()
+    destination?: string;
+
+    @ApiProperty({format: 'date-time', example: new Date(),})
+    @IsOptional()
+    @IsDateString()
     startTime?: Date;
     
-    @ApiProperty()
+    @ApiProperty({format: 'date-time', example: new Date(),})
     @IsOptional()
+    @IsDateString()
     endTime?: Date;
     
     @ApiProperty()
     @IsOptional()
-    interest?: string[];
-    
-    @ApiProperty()
-    @IsOptional()
+    @Min(0)
     budget?: number;
     
-    @ApiProperty()
+    @ApiProperty({example: 1})
     @IsOptional()
+    @Min(1)
     groupSize?: number;
+
+    @ApiProperty({example: ['Personal Car', 'Taxi']})
+    @IsOptional()
+    @IsString( {each: true} ) 
+    transit: string[];
+
+    @ApiProperty({example: ["solo-travel"]})
+    @IsNotEmpty()
+    @IsString({each: true})
+    @ArrayMinSize(1)
+    preferredTags: string[];
 }
 
 export class UpdatePlanDto extends PartialType(CreatePlanDto) {}

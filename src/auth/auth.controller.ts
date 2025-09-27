@@ -22,4 +22,10 @@ export class AuthController {
     async login(@Body() loginDto: LoginDto) {
         return this.authService.login(loginDto);
     }
+    @Post('guest')
+    @ApiOperation({ summary: 'Generate guest token' })
+    @ApiResponse({ status: 201, description: 'Guest token successfully generated' })
+    async guest(): Promise<{ message: string, token: string }> {
+        return this.authService.createGuestToken();
+    }
 }

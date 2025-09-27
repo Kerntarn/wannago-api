@@ -14,32 +14,18 @@ export const TransactionMessages = {
 };
 
 export enum TransactionStatus {
-      PENDING = 'Pending',  
-      SUCCESS = 'Success',   
-      FAILED = 'Failed',     
-      CANCELLED = 'Cancelled', 
+      PENDING = 'pending', 
+      PROCESSING = 'processing', 
+      SUCCESS = 'success',   
+      FAILED = 'failed',     
+      CANCELLED = 'cancelled', 
 }
 
 export enum PaymentMethod {
+      CREDIT_CARD = 'Credit Card',
       VISA = 'Visa',
       MASTERCARD = 'MasterCard',
       QR = 'QR Payment',
       PROMPTPAY = 'PromptPay',
       MOBILE = 'Mobile Banking',
-}
-
-export enum AdvertiserType{
-      ACCOMMODATION = 'Accommodation',
-      RESTAURANT = 'Restaurant',
-      ATTRACTION = 'Attraction',
-      CARRENTAL = 'CarRental',     
-      BUSSERVICE = 'BusService',     
-      AIRLINE = 'Airline',         
-}
-
-export enum AdDuration {
-    DAYS_7 = 7,
-    DAYS_15 = 15,
-    DAYS_30 = 30,
-    DAYS_60 = 60,
 }

@@ -6,13 +6,15 @@ import { UsersService } from './users.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from 'src/schemas/user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
+import {ApiBearerAuth } from '@nestjs/swagger'
 
 @Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@ApiBearerAuth('jwt')
 export class UsersController {
     constructor(private readonly userservice: UsersService) {}
 
   @Get('')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USER)
   getProfile(@CurrentUser() user) {
     console.log(user);
@@ -20,21 +22,18 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USER)
   editProfile(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userservice.update(id, updateUserDto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   deleteUser(@Param('id') id: string) {
     return this.userservice.remove(id);
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USER)
   getUserById(@Param('id') id: string) {
     return this.userservice.findById(id);

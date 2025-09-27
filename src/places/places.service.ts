@@ -3,13 +3,23 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
+import { User } from 'src/schemas/user.schema';
+import { TagsService } from 'src/tags/tags.service';
 
 @Injectable()
 export class PlacesService {
-  constructor(@InjectModel(Place.name) private placeModel: Model<PlaceDocument>) {}
+  constructor(
+    @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
+    private readonly tagsService: TagsService
+  ) {}
 
-  async create(data: any, type: string): Promise<Place> {
-    const currentUserId = "001";
+  async create(data: any, type: string, user: User): Promise<Place> {
+    if (!user) throw new UnauthorizedException('User need token to create place');
+    
+    //extract Latitude and Longitude from url
+    // And Make ._toEntity()
+
+    const currentUserId = user["userId"];
     const place = new this.placeModel({ ...data, providerId: currentUserId, type: type});
     return place.save();
   }
@@ -30,6 +40,11 @@ export class PlacesService {
 
   findOne(id: string) {
     return this.placeModel.findById(id).exec();
+  }
+
+  async findByName(name: string): Promise<Place[]> {
+    const places = await this.placeModel.find({ name: new RegExp(name, 'i') }).exec();
+    return places;
   }
 
   async update(id: string, data: any, type: string, userId: ObjectId) {
@@ -55,6 +70,22 @@ export class PlacesService {
       throw new NotFoundException(`Place with ID ${id} not found or not owned by user`);
     }
   }
-
+  
+  async getMostRelatedPlace(places: Place[], preferredTags: string[]): Promise<Place> {
+    const tags = this.tagsService.getWeight();
+    
+    const result = places.map(place => {
+      const score = place.tags.map(tag => {
+        return (preferredTags.includes(tag) ? tags[tag] : 0);
+      });
+      return { ...place, score };
+    });
+    result.sort((a, b) => {
+      const sumA = a.score.reduce((acc, curr) => acc + curr, 0);
+      const sumB = b.score.reduce((acc, curr) => acc + curr, 0);
+      return sumB - sumA;
+    });
+    return result[0];
+  }
   
 }

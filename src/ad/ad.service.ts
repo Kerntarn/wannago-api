@@ -1,0 +1,289 @@
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Ad, AdDocument } from '../schemas/ad.schema';
+import { Transaction, TransactionDocument } from '../schemas/transaction.schema';
+import { Place, PlaceDocument } from '../schemas/place.schema';
+import { CreateAdDto } from './dtos/create-ad.dto';
+import { PlacesService } from 'src/places/places.service';
+import { UsersService } from 'src/users/users.service';
+import { TransactionService } from 'src/transaction/transaction.service';
+import { TransactionStatus } from 'src/transaction/transaction.asset';
+import { AdStatus } from './ad.asset';
+
+
+@Injectable()
+export class AdService {
+
+  constructor(
+    private readonly userService: UsersService,
+    private readonly placesService: PlacesService,
+    private readonly transactionService: TransactionService,
+    @InjectModel(Ad.name) private adModel: Model<AdDocument>,
+    @InjectModel(Place.name) private placeModel: Model<Place>,
+  ) {}
+
+  //สร้าง
+  async createAd(providerId: string, createAdDto: CreateAdDto) { //แก้
+
+    const provider = await this.userService.findById(providerId);
+    if (!provider) {
+      throw new NotFoundException('User not found');
+    }
+
+    const place = await this.placeModel.findById(createAdDto.placeId);
+    if (!place) {
+      throw new NotFoundException('Place not found');
+    }
+
+    const ad = await this.adModel.create({
+      providerId: provider._id,
+      placeId: place._id,
+      durationDays: createAdDto.durationDays,
+      price: createAdDto.price,
+    });
+
+    const transaction = await this.transactionService.create(providerId, ad.id, createAdDto.transaction);
+    if (transaction.status == TransactionStatus.SUCCESS){
+      ad.status = AdStatus.ACTIVE;
+      ad.expireAt = new Date(Date.now() + ad.durationDays * 24*60*60*1000);
+      await ad.save();
+    }
+    return {
+      id: ad._id,
+      providerId: ad.providerId,
+      placeId: ad.placeId,
+      status: ad.status,
+      durationDays: ad.durationDays,
+      price: ad.price,
+      expireAt: ad.expireAt
+    };
+  }
+
+  async getAllAds(providerId: string){
+
+    const stats = await this.getAllAdsStats(providerId)
+    const graph = await this.getAllAdsGraph(providerId)
+    const table = await this.getTable(providerId)
+    return { stats , graph, table }
+
+  }
+
+  async getAdById(providerId: string, adId: string){
+
+    const adObjectId = new Types.ObjectId(adId);
+    const userObjectId = new Types.ObjectId(providerId);
+
+    const ad = await this.adModel.findById(adObjectId);
+    if (!ad) throw new NotFoundException('Ad not found');
+
+    if (!ad.providerId.equals(userObjectId)) {
+      throw new ForbiddenException('You are not allowed to access this ad');
+    } 
+
+    const stats = await this.getAdStats(adId)
+    const graph = await this.getAdGraph(adId)
+
+    return { stats , graph}
+
+  }
+
+  async getAllAdsStats(providerId: string) {
+   
+    const providerObjectId = new Types.ObjectId(providerId);
+    const ads = await this.adModel.find({ providerId: providerObjectId }).sort({ createdAt: -1 });
+
+    if (!ads || ads.length === 0) throw new NotFoundException('No ads found for this user');
+
+    const totalViews = ads.reduce((sum, ad) => sum + ad.views, 0);
+    const totalClicks = ads.reduce((sum, ad) => sum + ad.clicks, 0);
+    const totalContacts = ads.reduce((sum, ad) => sum + ad.contacts, 0);
+    const totalBookings = ads.reduce((sum, ad) => sum + ad.bookings, 0);
+    const ctr = totalViews > 0 ? parseFloat(((totalClicks / totalViews) * 100).toFixed(2)) : 0;
+
+    return {
+      total: {
+        views: totalViews,
+        clicks: totalClicks,
+        contacts: totalContacts,
+        bookings: totalBookings,
+        ctr,
+      }
+    };
+  }
+
+  async getAllAdsGraph(ownerId: string) {
+    const ads = await this.adModel.find({ providerId: new Types.ObjectId(ownerId) }).sort({ createdAt: 1 });
+    if (!ads.length) throw new NotFoundException('No ads found for this user');
+
+    const firstDate = new Date(Math.min(...ads.map(a => a.createdAt.getTime())));
+    const endDate = new Date();
+    
+    const stats: Record<string, any> = {};
+
+    // สร้าง key สำหรับแต่ละวัน
+    let current = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
+    while (current <= endDate) {
+      const dayKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2,'0')}-${String(current.getDate()).padStart(2,'0')}`;
+      stats[dayKey] = { date: dayKey, click: 0, view: 0, contract: 0, booking: 0, ctr: 0 };
+      current.setDate(current.getDate() + 1); // ขยับวันทีละ 1
+    }
+
+    ads.forEach(ad => {
+      const dayKey = `${ad.createdAt.getFullYear()}-${String(ad.createdAt.getMonth() + 1).padStart(2,'0')}-${String(ad.createdAt.getDate()).padStart(2,'0')}`;
+      if (!stats[dayKey]) return;
+      stats[dayKey].click += ad.clicks;
+      stats[dayKey].view += ad.views;
+      stats[dayKey].contract += ad.contacts;
+      stats[dayKey].booking += ad.bookings;
+    });
+
+    Object.values(stats).forEach(stat => {
+      stat.ctr = stat.view > 0 ? parseFloat(((stat.click / stat.view) * 100).toFixed(2)) : 0;
+    });
+
+    return Object.values(stats).sort((a,b) => a.date > b.date ? 1 : -1);
+  }
+
+
+  async getAdStats(adId: string) {
+
+    const adObjectId = new Types.ObjectId(adId);
+
+    const ad = await this.adModel.findById(adObjectId).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    if (!ad) throw new NotFoundException('Ad not found');
+
+    const ctr = ad.views > 0 ? parseFloat(((ad.clicks / ad.views) * 100).toFixed(2)) : 0;
+
+    return {
+      adId: ad._id,
+      placeName: ad.placeId.name,
+      stats: {
+        views: ad.views,
+        clicks: ad.clicks,
+        contacts: ad.contacts,
+        bookings: ad.bookings,
+        ctr,
+      },
+    };
+  }
+
+
+  async getAdGraph(adId: string) {
+    const adObjectId = new Types.ObjectId(adId);
+    const ad = await this.adModel.findById(adObjectId);
+    if (!ad) throw new NotFoundException('Ad not found');
+
+    const firstDate = new Date(ad.createdAt);
+    const endDate = new Date();
+
+    const stats: Record<string, any> = {};
+
+    let current = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
+    while (current <= endDate) {
+      const dayKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+      stats[dayKey] = { date: dayKey, click: 0, view: 0, contract: 0, booking: 0, ctr: 0 };
+      current.setDate(current.getDate() + 1);
+    }
+
+    const dayKey = `${ad.createdAt.getFullYear()}-${String(ad.createdAt.getMonth() + 1).padStart(2,'0')}-${String(ad.createdAt.getDate()).padStart(2,'0')}`;
+    stats[dayKey].click += ad.clicks;
+    stats[dayKey].view += ad.views;
+    stats[dayKey].contract += ad.contacts;
+    stats[dayKey].booking += ad.bookings;
+
+    Object.values(stats).forEach(stat => {
+      stat.ctr = stat.view > 0 ? parseFloat(((stat.click / stat.view) * 100).toFixed(2)) : 0;
+    });
+
+    return Object.values(stats).sort((a, b) => a.date > b.date ? 1 : -1);
+  }
+  
+  async getTable(providerId: string) {
+   
+    if (!Types.ObjectId.isValid(providerId)) {
+      throw new NotFoundException('Invalid providerId');
+    }
+
+    const ads = await this.adModel
+      .find({ providerId: new Types.ObjectId(providerId) })
+      .sort({ createdAt: -1 })
+      .populate<{ placeId: PlaceDocument }>('placeId', 'name'); 
+
+    return ads.map(ad => ({
+      id: ad._id,
+      providerId: ad.providerId,
+      placeId: ad.placeId._id,
+      placeName: ad.placeId.name, 
+      status: ad.status,
+      createdAt: ad.createdAt,
+      expireAt: ad.expireAt,
+      price: ad.price,
+    }));
+  }
+
+  async deleteAd(adId: string, providerId: string) {
+    const ad = await this.adModel.findOne({ _id: adId, providerId: providerId });
+    if (!ad) {
+      throw new NotFoundException('Ad not found or you are not the owner');
+    }
+    await this.adModel.deleteOne({ _id: adId });
+    return { message: 'Ad deleted successfully' };
+  }
+
+
+  async incrementViews(adId: string) {
+    const ad = await this.adModel.findById(adId);
+    if (!ad) throw new NotFoundException('Ad not found');
+
+    const ctr = ad.views > 0 ? parseFloat((( ad.clicks / ( ad.views + 1 )) * 100).toFixed(2)) : 0
+    const updateAd = await this.adModel.findByIdAndUpdate(adId,{ $inc: { views : 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+
+    const formatted = {
+        _id: updateAd._id,
+        providerId: updateAd.providerId,
+        placeName: updateAd.placeId.name, 
+        views: updateAd.views,
+        ctr: updateAd.ctr
+      };
+    return formatted;
+  }
+
+  async incrementClicks(adId: string) {
+    const ad = await this.adModel.findById(adId);
+    if (!ad) throw new NotFoundException('Ad not found');
+
+    const ctr = ad.views > 0 ? parseFloat((((ad.clicks + 1) / ad.views) * 100).toFixed(2)) : 0
+    const updateAd = await this.adModel.findByIdAndUpdate(adId,{ $inc: { clicks: 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    const formatted = {
+        _id: updateAd._id,
+        providerId: updateAd.providerId,
+        placeName: updateAd.placeId.name, 
+        clicks: updateAd.clicks,
+        ctr: updateAd.ctr
+      };
+    return formatted;
+  }
+
+  async incrementContacts(adId: string) {
+    const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { contacts: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    const formatted = {
+        _id: ad._id,
+        providerId: ad.providerId,
+        placeName: ad.placeId.name, 
+        contacts: ad.contacts
+      };
+    return formatted;
+  }
+
+  async incrementBookings(adId: string) {
+   const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { bookings: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    const formatted = {
+        _id: ad._id,
+        providerId: ad.providerId,
+        placeName: ad.placeId.name, 
+        bookings: ad.bookings
+      };
+      return formatted;
+  }
+}
