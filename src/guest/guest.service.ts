@@ -27,4 +27,8 @@ export class GuestService {
   async findGuest(guestId: string): Promise<GuestDocument | null> {
     return this.guestModel.findOne({ guestId }).exec();
   }
+
+  async deleteGuest(guestId: string): Promise<any> {
+    return this.guestModel.findOneAndDelete({ guestId }).exec();
+  }
 }
