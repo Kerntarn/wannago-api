@@ -11,6 +11,7 @@ export class RegisterDto {
     @IsString()
     @MinLength(8)
     password: string;
+    
     @ApiProperty({ minLength: 2, maxLength: 50 })
     @IsString()
     @Length(2, 50)
