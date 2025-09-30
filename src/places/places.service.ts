@@ -1,5 +1,6 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { asyncWrapProviders } from 'async_hooks';
 import { Model, ObjectId } from 'mongoose';
 import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
@@ -18,9 +19,16 @@ export class PlacesService {
     
     //extract Latitude and Longitude from url
     // And Make ._toEntity()
-
-    const currentUserId = user["userId"];
-    const place = new this.placeModel({ ...data, providerId: currentUserId, type: type});
+    // If you need a DTO, create it as a plain object:
+    const currentUserId = user._id;
+    const placedto = {
+      ... data,
+      location: [0, 0], //mock
+      type: type,
+      providerId: currentUserId
+    };
+    console.log(placedto);
+    const place = new this.placeModel(placedto);
     return place.save();
   }
 
