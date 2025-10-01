@@ -24,7 +24,7 @@ export class CreatePlanDto {
     @IsDateString()
     endTime?: Date;
     
-    @ApiProperty()
+    @ApiProperty({ example: 500 })
     @IsOptional()
     @Min(0)
     budget?: number;
