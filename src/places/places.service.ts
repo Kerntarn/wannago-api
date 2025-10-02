@@ -1,5 +1,6 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { asyncWrapProviders } from 'async_hooks';
 import { Model, ObjectId } from 'mongoose';
 import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
@@ -26,6 +27,7 @@ export class PlacesService {
 
     const currentUserId = user._id;
     const place = new this.placeModel({ ...data, providerId: currentUserId, type: type});
+
     return place.save();
   }
 
