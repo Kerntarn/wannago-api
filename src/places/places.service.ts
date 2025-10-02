@@ -19,7 +19,7 @@ export class PlacesService {
     //extract Latitude and Longitude from url
     // And Make ._toEntity()
 
-    const currentUserId = user["userId"];
+    const currentUserId = user._id;
     const place = new this.placeModel({ ...data, providerId: currentUserId, type: type});
     return place.save();
   }

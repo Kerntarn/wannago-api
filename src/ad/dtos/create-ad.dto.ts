@@ -1,6 +1,7 @@
-import { IsString, IsOptional, IsNumber, IsNotEmpty, IsMongoId } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsNotEmpty, IsMongoId, IsObject, ValidateNested } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateTransactionDto } from 'src/transaction/dtos/create-transaction.dto';
+import { Type } from 'class-transformer';
 
 export class CreateAdDto {
   @ApiProperty({
@@ -23,5 +24,8 @@ export class CreateAdDto {
 
   @ApiProperty({ type: CreateTransactionDto, description: 'Transaction details' })
   @IsNotEmpty({ message: 'transaction should not be empty' })
+  @IsObject({ message: 'transaction must be an object' })
+  @ValidateNested()  // ⚠️ สำคัญมาก
+  @Type(() => CreateTransactionDto)  // ⚠️ สำคัญมาก
   transaction: CreateTransactionDto;
 }

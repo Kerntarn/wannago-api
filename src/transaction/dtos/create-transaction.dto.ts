@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
       IsOptional,
       IsObject,
@@ -9,6 +9,7 @@ import {
       Matches,
       IsNotEmpty,
       ValidateNested,
+      ValidateIf
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaymentMethod } from '../transaction.asset';
@@ -16,7 +17,7 @@ import { PaymentMethod } from '../transaction.asset';
 export class CardInfoDto {
       @ApiProperty({ example: 'John Doe' })
       @IsNotEmpty({ message: "holder's name should not be empty"})
-      @IsString()
+      @IsString({ message: "holder's name must be string"})
       holder: string;
 
       @ApiProperty({ example: 'john@example.com' })
@@ -26,7 +27,7 @@ export class CardInfoDto {
 
       @ApiProperty({ example: '4111111111111111' })
       @IsNotEmpty({ message: 'card number should not be empty' })
-      @IsCreditCard()
+      @IsCreditCard({ message: 'input must be credit card number' })
       number: string;
 
       @ApiProperty({ example: '12/26', description: 'MM/YY format' })
@@ -50,7 +51,7 @@ export class CreateTransactionDto {
       @IsEnum(PaymentMethod)
       method: PaymentMethod;
 
-      @ApiPropertyOptional({
+      @ApiProperty({
             description: 'ข้อมูลบัตรเครดิต (ถ้าใช้ Credit Card)',
             example: {
                   holder: 'John Doe',
@@ -59,10 +60,11 @@ export class CreateTransactionDto {
                   expiry: '12/26',
                   cvc: '123',}
       })
+      @ValidateIf(o => o.method === PaymentMethod.CREDIT_CARD)
       @IsObject()
       @ValidateNested()  
       @Type(() => CardInfoDto) 
-      cardInfo?: CardInfoDto;
+      cardInfo?: CardInfoDto; 
 }
 
 // {
