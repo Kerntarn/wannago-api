@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Ad, AdDocument } from '../schemas/ad.schema';
@@ -10,6 +10,7 @@ import { UsersService } from 'src/users/users.service';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { TransactionStatus } from 'src/transaction/transaction.asset';
 import { AdStatus } from './ad.asset';
+import { RenewAdDto } from './dtos/renew-ad.dto';
 
 
 @Injectable()
@@ -45,8 +46,13 @@ export class AdService {
 
     const transaction = await this.transactionService.create(providerId, ad.id, createAdDto.transaction);
     if (transaction.status == TransactionStatus.SUCCESS){
-      ad.status = AdStatus.ACTIVE;
-      ad.expireAt = new Date(Date.now() + ad.durationDays * 24*60*60*1000);
+      // ad.status = AdStatus.ACTIVE;
+      // ad.expireAt = new Date(Date.now() + ad.durationDays * 24*60*60*1000);
+
+
+      ad.status = AdStatus.EXPIRED;
+      ad.expireAt = new Date(Date.now());
+
       await ad.save();
     }
     return {
@@ -58,6 +64,44 @@ export class AdService {
       price: ad.price,
       expireAt: ad.expireAt
     };
+  }
+
+
+  async renewAd(adId: string, providerId: string, renewAdDto: RenewAdDto) {
+
+    const provider = await this.userService.findById(providerId);
+    if (!provider) {
+      throw new NotFoundException('Provider not found');
+    }
+
+    const ad = await this.adModel.findOne({ _id: adId, providerId: providerId });
+    if (!ad) {
+      throw new NotFoundException('Ad not found');
+    }
+
+    if (ad.status == AdStatus.ACTIVE){
+      throw new BadRequestException('Cannot renew an active ad. Please wait until it expires.');
+    }
+
+    if (ad.status == AdStatus.EXPIRED){
+      const transaction = await this.transactionService.create(providerId, ad.id, renewAdDto.transaction);
+      
+      if (transaction.status == TransactionStatus.SUCCESS){
+        ad.status = AdStatus.ACTIVE;
+        ad.expireAt = new Date(Date.now() + ad.durationDays * 24*60*60*1000);
+        await ad.save();
+
+        return {
+          id: ad._id,
+          providerId: ad.providerId,
+          placeId: ad.placeId,
+          status: ad.status,
+          durationDays: ad.durationDays,
+          price: ad.price,
+          expireAt: ad.expireAt
+        };
+      }
+    }
   }
 
   async getAllAds(providerId: string){
@@ -221,6 +265,8 @@ export class AdService {
       price: ad.price,
     }));
   }
+
+
 
   async deleteAd(adId: string, providerId: string) {
     const ad = await this.adModel.findOne({ _id: adId, providerId: providerId });

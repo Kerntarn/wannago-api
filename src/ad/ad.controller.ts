@@ -1,8 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException } from '@nestjs/common';
 import { AdService } from './ad.service';
 import { CreateAdDto } from './dtos/create-ad.dto';
-import { UpdateAdDto } from './dtos/update-ad.dto';
-
+import { RenewAdDto } from './dtos/renew-ad.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/role.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -32,7 +31,6 @@ export class AdController {
   async get(@CurrentUser() user: any) {
     const userId = user._id;
     const data = await this.adService.getAllAds(userId);
-    console.log("----------------->",userId);
     return { data };
   }
 
@@ -56,6 +54,16 @@ export class AdController {
       throw new NotFoundException('Ad stats not found');
     }
     return adStats;
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
+  @Patch('/renew/:adId')
+  async renew(@CurrentUser() user: any, @Param('adId') adId: string, @Body() renewAdDto: RenewAdDto) {
+    const ownerId = user._id;
+    const ad = await this.adService.renewAd(adId, ownerId, renewAdDto);
+    return {data: ad};
+
   }
 
   @Patch(':id/view')
