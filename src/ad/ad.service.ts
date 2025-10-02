@@ -37,6 +37,11 @@ export class AdService {
       throw new NotFoundException('Place not found');
     }
 
+    const existingAd = await this.adModel.findOne({providerId: provider._id,placeId: place._id,});
+    if (existingAd) {
+      throw new BadRequestException('This provider already has an ad for this place');
+    }
+
     const ad = await this.adModel.create({
       providerId: provider._id,
       placeId: place._id,
@@ -46,12 +51,8 @@ export class AdService {
 
     const transaction = await this.transactionService.create(providerId, ad.id, createAdDto.transaction);
     if (transaction.status == TransactionStatus.SUCCESS){
-      // ad.status = AdStatus.ACTIVE;
-      // ad.expireAt = new Date(Date.now() + ad.durationDays * 24*60*60*1000);
-
-
-      ad.status = AdStatus.EXPIRED;
-      ad.expireAt = new Date(Date.now());
+      ad.status = AdStatus.ACTIVE;
+      ad.expireAt = new Date(Date.now() + ad.durationDays * 24*60*60*1000);
 
       await ad.save();
     }
@@ -69,14 +70,22 @@ export class AdService {
 
   async renewAd(adId: string, providerId: string, renewAdDto: RenewAdDto) {
 
+    if (!Types.ObjectId.isValid(adId)) {
+      throw new BadRequestException('Invalid ad ID format');
+    }
+
     const provider = await this.userService.findById(providerId);
     if (!provider) {
       throw new NotFoundException('Provider not found');
     }
 
-    const ad = await this.adModel.findOne({ _id: adId, providerId: providerId });
+    const ad = await this.adModel.findById(adId);
     if (!ad) {
       throw new NotFoundException('Ad not found');
+    }
+
+    if (!ad.providerId.equals(new Types.ObjectId(providerId))) {
+      throw new ForbiddenException('You do not have permission to renew this ad');
     }
 
     if (ad.status == AdStatus.ACTIVE){
@@ -102,6 +111,10 @@ export class AdService {
         };
       }
     }
+
+    if (ad.status == AdStatus.EXPIRED){
+      throw new BadRequestException('Cannot renew pending ad');
+    }
   }
 
   async getAllAds(providerId: string){
@@ -117,6 +130,10 @@ export class AdService {
 
     const adObjectId = new Types.ObjectId(adId);
     const userObjectId = new Types.ObjectId(providerId);
+
+    if (!Types.ObjectId.isValid(adId)) {
+      throw new BadRequestException('Invalid Ad ID');
+    }
 
     const ad = await this.adModel.findById(adObjectId);
     if (!ad) throw new NotFoundException('Ad not found');
@@ -269,10 +286,20 @@ export class AdService {
 
 
   async deleteAd(adId: string, providerId: string) {
-    const ad = await this.adModel.findOne({ _id: adId, providerId: providerId });
-    if (!ad) {
-      throw new NotFoundException('Ad not found or you are not the owner');
+
+    if (!Types.ObjectId.isValid(adId)) {
+      throw new BadRequestException('Invalid ad ID format');
     }
+
+    const ad = await this.adModel.findById(adId);
+    if (!ad) {
+      throw new NotFoundException('Ad not found');
+    }
+
+    if (!ad.providerId.equals(new Types.ObjectId(providerId))) {
+      throw new ForbiddenException('You do not have permission to delete this ad');
+    }
+
     await this.adModel.deleteOne({ _id: adId });
     return { message: 'Ad deleted successfully' };
   }

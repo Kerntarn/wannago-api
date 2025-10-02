@@ -25,7 +25,7 @@ export class CreateAdDto {
   @ApiProperty({ type: CreateTransactionDto, description: 'Transaction details' })
   @IsNotEmpty({ message: 'transaction should not be empty' })
   @IsObject({ message: 'transaction must be an object' })
-  @ValidateNested()  // ⚠️ สำคัญมาก
-  @Type(() => CreateTransactionDto)  // ⚠️ สำคัญมาก
+  @ValidateNested()  
+  @Type(() => CreateTransactionDto)  
   transaction: CreateTransactionDto;
 }

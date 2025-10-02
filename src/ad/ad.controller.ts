@@ -19,15 +19,6 @@ export class AdController {
   @Roles(UserRole.USER)
   @Post()
   async create(@CurrentUser() user: any,@Body() createAdDto: CreateAdDto) {
-
-    console.log('=== DEBUG ===');
-    console.log('DTO Type:', createAdDto.constructor.name);
-    console.log('Transaction Type:', createAdDto.transaction?.constructor.name);
-    console.log('CardInfo Type:', createAdDto.transaction?.cardInfo?.constructor.name);
-    console.log('Holder Type:', typeof createAdDto.transaction?.cardInfo?.holder);
-    console.log('Holder Value:', createAdDto.transaction?.cardInfo?.holder);
-    console.log('=============');
-
     const userId = user._id;
     const ad = await this.adService.createAd(userId, createAdDto);
     return {data: ad};
@@ -72,7 +63,6 @@ export class AdController {
     const ownerId = user._id;
     const ad = await this.adService.renewAd(adId, ownerId, renewAdDto);
     return {data: ad};
-
   }
 
   @Patch(':id/view')
