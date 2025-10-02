@@ -12,18 +12,10 @@ export class CreatePlaceDto {
     @IsOptional()
     imageUrl?: string;
     
-    // @ApiProperty()
-    // @IsNotEmpty()
-    // @IsUrl()
-    // location: string;
-
     @ApiProperty()
-    @IsArray()
-    @ArrayMinSize(2) // ต้องมีอย่างน้อย 2 ค่า
-    @ArrayMaxSize(2) // ไม่เกิน 2 ค่า
-    @Type(() => Number)
-    @IsNumber({}, { each: true }) // ตรวจสอบว่าเป็นตัวเลขทั้งหมด
-    location: number[]; // [longitude, latitude]
+    @IsNotEmpty()
+    @IsUrl()
+    location: string;
     
     @ApiProperty()
     @IsNotEmpty()
