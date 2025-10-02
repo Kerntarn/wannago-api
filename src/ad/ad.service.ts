@@ -11,6 +11,7 @@ import { TransactionService } from 'src/transaction/transaction.service';
 import { TransactionStatus } from 'src/transaction/transaction.asset';
 import { AdStatus } from './ad.asset';
 import { RenewAdDto } from './dtos/renew-ad.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 
 @Injectable()
@@ -358,5 +359,20 @@ export class AdService {
         bookings: ad.bookings
       };
       return formatted;
+  }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async checkExpiredAds() {
+    const now = new Date();
+    const result = await this.adModel.updateMany(
+      {
+        status: AdStatus.ACTIVE,
+        expiredAt: { $lte: now },
+      },
+      {
+        $set: { status: AdStatus.EXPIRED },
+      },
+    );
+    console.log(`${result.modifiedCount} ads expired at ${now}`);
   }
 }
