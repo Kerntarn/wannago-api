@@ -64,7 +64,7 @@ export class User {
   userName: string;
 
   @Prop({
-    default: null
+    default: "https://www.slashfilm.com/img/gallery/demon-slayer-season-2-tanjiro-declines-a-friend-request-as-things-come-to-a-head/intro-1644195796.jpg"
   })
   profileImage?: string;
 

@@ -44,7 +44,7 @@ export class UpdatePlaceDto {
 }
 
 export class FindPlaceQueryDto {
+  @ApiProperty({ example: "Accommodation", required: false })
   @IsOptional()
-  @IsString()
   type?: string;
 }
