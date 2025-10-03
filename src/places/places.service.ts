@@ -1,10 +1,12 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { asyncWrapProviders } from 'async_hooks';
 import { Model, ObjectId } from 'mongoose';
 import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
 import { User } from 'src/schemas/user.schema';
 import { TagsService } from 'src/tags/tags.service';
+import axios from 'axios';
 
 @Injectable()
 export class PlacesService {
@@ -15,12 +17,17 @@ export class PlacesService {
 
   async create(data: any, type: string, user: User): Promise<Place> {
     if (!user) throw new UnauthorizedException('User need token to create place');
-    
-    //extract Latitude and Longitude from url
-    // And Make ._toEntity()
 
-    const currentUserId = user["userId"];
+    try {
+        const coords = await this.getCoordinates(data.location);
+        data.location = coords;
+    } catch (err) {
+        throw new BadRequestException('Cannot extract coordinates from URL');
+    }
+
+    const currentUserId = user._id;
     const place = new this.placeModel({ ...data, providerId: currentUserId, type: type});
+
     return place.save();
   }
 
@@ -88,4 +95,52 @@ export class PlacesService {
     return result[0];
   }
   
+  async getCoordinates(url: string): Promise<[ number, number ]> {
+    if (!url) throw new BadRequestException('URL is required');
+
+    //short link
+    if (url.includes('goo.gl') || url.includes('maps.app.goo.gl')) {
+      try {
+        const res = await axios.get(url, {
+          maxRedirects: 0,
+          validateStatus: status => status >= 200 && status < 400,
+        } as any);
+
+        // ดึง URL จาก header location
+        const redirectUrl = res.headers['location'];
+        if (!redirectUrl) throw new BadRequestException('Cannot extract coordinates from link');
+
+        const coords = this.parseLatLng(redirectUrl);
+        if (!coords) throw new BadRequestException('Cannot extract coordinates from link');
+        return coords;
+      } catch (err: any) {
+        if (err.response?.status === 302) {
+          const redirectUrl = err.response.headers.location;
+          const coords = this.parseLatLng(redirectUrl);
+          if (!coords) throw new BadRequestException('Cannot extract coordinates from link');
+          return coords;
+        }
+        throw new BadRequestException('Invalid Google Maps URL');
+      }
+    } else {
+      //full link
+      const coords = this.parseLatLng(url);
+      if (!coords) throw new BadRequestException('Cannot extract coordinates from link');
+      return coords;
+    }
+  }
+
+  private parseLatLng(url: string): [ number, number ] | null {
+
+    let match = url.match(/@([-.\d]+),([-.\d]+)/);
+    if (match) {
+      return [parseFloat(match[1]), parseFloat(match[2])];
+    }
+
+    match = url.match(/\/place\/([-.\d]+),([-.\d]+)/);
+    if (match) {
+      return [parseFloat(match[1]), parseFloat(match[2])];
+    }
+    return null;
+  }
 }
