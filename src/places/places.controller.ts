@@ -32,8 +32,6 @@ export class PlacesController {
     return place;
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
   @Post('restaurant')
   createRes(@Body() createRestaurantDto: CreateRestaurantDto, @CurrentUser() user) {
     const place = this.placesService.create(createRestaurantDto, 'Restaurant', user);
