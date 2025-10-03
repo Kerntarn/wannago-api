@@ -4,17 +4,17 @@ import { CreatePlaceDto } from './place.dto';
 // What we expect when receiving request
 
 export class CreateAccommodationDto extends CreatePlaceDto{
-    @ApiProperty()
+    @ApiProperty({ example: ["pool", "wifi", "gym"]})
     @IsNotEmpty()
     facilities: string[];
 
-    @ApiProperty()
+    @ApiProperty({ example: 2})
     @IsNotEmpty()
     @Min(0)
     @Max(5)
     starRating: number;
     
-    @ApiProperty()
+    @ApiProperty({ example: "https://booking.com/hotel/th/marriot.html" })
     @IsOptional()
     @IsUrl()
     redirectUrl?: string;

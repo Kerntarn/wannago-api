@@ -7,6 +7,7 @@ import { Accommodation, AccommodationSchema } from 'src/schemas/accommodation.sc
 import { Attraction, AttractionSchema } from 'src/schemas/attraction.schema';
 import { Restaurant, RestaurantSchema } from 'src/schemas/restaurant.schema';
 import { TagsModule } from 'src/tags/tags.module';
+import { AdModule } from 'src/ad/ad.module';
 
 @Module({
   imports: [MongooseModule.forFeatureAsync([
@@ -20,7 +21,9 @@ import { TagsModule } from 'src/tags/tags.module';
       return schema;
     }
   }]),
-    TagsModule],
+    TagsModule,
+    AdModule
+  ],
   controllers: [PlacesController],
   providers: [PlacesService],
   exports: [MongooseModule, PlacesService],

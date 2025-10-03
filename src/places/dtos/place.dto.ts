@@ -4,24 +4,24 @@ import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsNotEmpty, IsNumber, IsOp
 // What we expect when receiving request
 
 export class CreatePlaceDto {
-    @ApiProperty()
+    @ApiProperty({ example: "ไก่ย่าง 5 ดาว สาขา ฉลองกรุง1"})
     @IsNotEmpty()
     name: string;
     
-    @ApiProperty()
+    @ApiProperty({ example: "https://q-xx.bstatic.com/xdata/images/hotel/max500/457026415.jpg?k=104fca4a3d71fbc8cda227fdc0c7c39ba97cdd9aee4927bd4419f776a72feb31&o="})
     @IsOptional()
     imageUrl?: string;
     
-    @ApiProperty()
+    @ApiProperty({ example: "https://maps.app.goo.gl/MfMgEck64HyW5S2D9" })
     @IsNotEmpty()
     @IsUrl()
     location: string;
     
-    @ApiProperty()
+    @ApiProperty({ example: "สถานที่ท่vงเที่ยวที่น่าสนใจสุดๆไปเลย อมก. โคตรจะเบิ้มๆน่ะ" })
     @IsNotEmpty()
     description: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: ["budget"]})
     @IsNotEmpty()
     tags: string[];
 }
@@ -44,7 +44,7 @@ export class UpdatePlaceDto {
 }
 
 export class FindPlaceQueryDto {
+  @ApiProperty({ example: "Accommodation", required: false })
   @IsOptional()
-  @IsString()
   type?: string;
 }

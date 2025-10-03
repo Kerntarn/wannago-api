@@ -4,7 +4,7 @@ import { CreatePlaceDto, UpdatePlaceDto } from './place.dto';
 // What we expect when receiving request
 
 export class CreateAttractionDto extends CreatePlaceDto{
-    @ApiProperty()
+    @ApiProperty({ example: 50 })
     @IsNotEmpty()
     @Min(0)
     entryFee: number;

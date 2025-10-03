@@ -7,12 +7,14 @@ import { Place, PlaceDocument } from 'src/schemas/place.schema';
 import { User } from 'src/schemas/user.schema';
 import { TagsService } from 'src/tags/tags.service';
 import axios from 'axios';
+import { AdService } from 'src/ad/ad.service';
 
 @Injectable()
 export class PlacesService {
   constructor(
     @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
-    private readonly tagsService: TagsService
+    private readonly tagsService: TagsService,
+    private readonly adService: AdService
   ) {}
 
   async create(data: any, type: string, user: User): Promise<Place> {
@@ -31,11 +33,16 @@ export class PlacesService {
     return place.save();
   }
 
-  async findAll(type?: string): Promise<Place[]> {
+  async findAll(type?: string, userId?: ObjectId): Promise<Place[]> {
     let places: Place[];
-    if (type) {
-      places = await this.placeModel.find({ type: type}).exec();
-    } else{
+
+    if (type && userId) {
+      places = await this.placeModel.find({ type: type, providerId: userId }).exec();
+    } else if (type && !userId) {
+      places = await this.placeModel.find({ type: type }).exec();
+    } else if (!type && userId) {
+      places = await this.placeModel.find({ providerId: userId }).exec();
+    } else {
       places = await this.placeModel.find().exec();
     }
     if (places.length === 0) {
@@ -51,6 +58,7 @@ export class PlacesService {
 
   async findByName(name: string): Promise<Place[]> {
     const places = await this.placeModel.find({ name: new RegExp(name, 'i') }).exec();
+    console.log(places);
     return places;
   }
 
@@ -92,6 +100,7 @@ export class PlacesService {
       const sumB = b.score.reduce((acc, curr) => acc + curr, 0);
       return sumB - sumA;
     });
+    // this.adService.incrementViews(result[0]);
     return result[0];
   }
   
