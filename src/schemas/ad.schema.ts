@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { AdStatus } from 'src/ad/ad.asset';
 
 export type AdDocument = HydratedDocument<Ad> & { createdAt: Date; updatedAt: Date };
@@ -10,7 +10,7 @@ export class Ad {
   @Prop({ required: true , type: Types.ObjectId, ref: 'User'}) 
   providerId: Types.ObjectId;
 
-  @Prop({ required: true , type: Types.ObjectId, ref: 'Place'})
+  @Prop({ required: true , type: mongoose.Schema.Types.ObjectId, ref: 'Place'})
   placeId: Types.ObjectId;
   
   @Prop({ required: true, type: Number }) 

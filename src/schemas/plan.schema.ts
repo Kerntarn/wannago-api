@@ -1,6 +1,7 @@
 import mongoose, { HydratedDocument, Model, ObjectId } from "mongoose";
 import { Place } from "./place.schema";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Route, RouteSchema } from "./route.schma";
 
 export type planDocument = HydratedDocument<Plan>;
 
@@ -11,12 +12,6 @@ export class Plan{
 
     @Prop( {required: true, type: [Number]})
     source: number[];
-
-    @Prop({ required: true, type: [Number], validate: {
-      validator: (value: number[]) => value.length == 2,
-      message: 'Destination must contain longitude and latitude of destination.',
-    }})
-    destination: number[];
 
     @Prop( {required: true, type: Date})
     startTime: Date;
@@ -36,6 +31,8 @@ export class Plan{
     @Prop( {required: false })
     ownerId: string;
 
+    @Prop( {required: true, type: [RouteSchema] })
+    routes: Route[];
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);

@@ -17,7 +17,7 @@ export class PlacesService {
     private readonly adService: AdService
   ) {}
 
-  async create(data: any, type: string, user: User): Promise<Place> {
+  async create(data: any, type: string, user: User): Promise<PlaceDocument> {
     if (!user) throw new UnauthorizedException('User need token to create place');
 
     try {
@@ -33,9 +33,9 @@ export class PlacesService {
     return place.save();
   }
 
-  async findAll(type?: string, userId?: ObjectId): Promise<Place[]> {
-    let places: Place[];
-
+  async findAll(type?: string, userId?: ObjectId): Promise<PlaceDocument[]> {
+    let places: PlaceDocument[];
+    
     if (type && userId) {
       places = await this.placeModel.find({ type: type, providerId: userId }).exec();
     } else if (type && !userId) {
@@ -56,7 +56,7 @@ export class PlacesService {
     return this.placeModel.findById(id).exec();
   }
 
-  async findByName(name: string): Promise<Place[]> {
+  async findByName(name: string): Promise<PlaceDocument[]> {
     const places = await this.placeModel.find({ name: new RegExp(name, 'i') }).exec();
     console.log(places);
     return places;
@@ -86,13 +86,12 @@ export class PlacesService {
     }
   }
   
-  async getMostRelatedPlace(places: Place[], preferredTags: string[]): Promise<Place> {
+  async getMostRelatedPlace(places: PlaceDocument[], preferredTags: string[]) {
+    console.log(`This is${places}`)
     const tags = this.tagsService.getWeight();
     
-    const result = places.map(place => {
-      const score = place.tags.map(tag => {
-        return (preferredTags.includes(tag) ? tags[tag] : 0);
-      });
+   const result = places.map(place => {
+      const score = place.tags.map(tag => (preferredTags.includes(tag) ? tags[tag] : 0));
       return { ...place, score };
     });
     result.sort((a, b) => {
@@ -100,8 +99,7 @@ export class PlacesService {
       const sumB = b.score.reduce((acc, curr) => acc + curr, 0);
       return sumB - sumA;
     });
-    // this.adService.incrementViews(result[0]);
-    return result[0];
+    return result;
   }
   
   async getCoordinates(url: string): Promise<[ number, number ]> {
