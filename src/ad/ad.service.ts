@@ -1,15 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Ad, AdDocument } from '../schemas/ad.schema';
 import { Transaction, TransactionDocument } from '../schemas/transaction.schema';
 import { Place, PlaceDocument } from '../schemas/place.schema';
 import { CreateAdDto } from './dtos/create-ad.dto';
-import { PlacesService } from 'src/places/places.service';
 import { UsersService } from 'src/users/users.service';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { TransactionStatus } from 'src/transaction/transaction.asset';
 import { AdStatus } from './ad.asset';
+import { RenewAdDto } from './dtos/renew-ad.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 
 @Injectable()
@@ -17,10 +18,9 @@ export class AdService {
 
   constructor(
     private readonly userService: UsersService,
-    private readonly placesService: PlacesService,
     private readonly transactionService: TransactionService,
     @InjectModel(Ad.name) private adModel: Model<AdDocument>,
-    @InjectModel(Place.name) private placeModel: Model<Place>,
+    @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
   ) {}
 
   //สร้าง
@@ -36,6 +36,11 @@ export class AdService {
       throw new NotFoundException('Place not found');
     }
 
+    const existingAd = await this.adModel.findOne({providerId: provider._id,placeId: place._id,});
+    if (existingAd) {
+      throw new BadRequestException('This provider already has an ad for this place');
+    }
+
     const ad = await this.adModel.create({
       providerId: provider._id,
       placeId: place._id,
@@ -47,6 +52,7 @@ export class AdService {
     if (transaction.status == TransactionStatus.SUCCESS){
       ad.status = AdStatus.ACTIVE;
       ad.expireAt = new Date(Date.now() + ad.durationDays * 24*60*60*1000);
+
       await ad.save();
     }
     return {
@@ -58,6 +64,56 @@ export class AdService {
       price: ad.price,
       expireAt: ad.expireAt
     };
+  }
+
+
+  async renewAd(adId: string, providerId: string, renewAdDto: RenewAdDto) {
+
+    if (!Types.ObjectId.isValid(adId)) {
+      throw new BadRequestException('Invalid ad ID format');
+    }
+
+    const provider = await this.userService.findById(providerId);
+    if (!provider) {
+      throw new NotFoundException('Provider not found');
+    }
+
+    const ad = await this.adModel.findById(adId);
+    if (!ad) {
+      throw new NotFoundException('Ad not found');
+    }
+
+    if (!ad.providerId.equals(new Types.ObjectId(providerId))) {
+      throw new ForbiddenException('You do not have permission to renew this ad');
+    }
+
+    if (ad.status == AdStatus.ACTIVE){
+      throw new BadRequestException('Cannot renew an active ad. Please wait until it expires.');
+    }
+
+    if (ad.status == AdStatus.EXPIRED){
+      const transaction = await this.transactionService.create(providerId, ad.id, renewAdDto.transaction);
+      
+      if (transaction.status == TransactionStatus.SUCCESS){
+        ad.status = AdStatus.ACTIVE;
+        ad.expireAt = new Date(Date.now() + ad.durationDays * 24*60*60*1000);
+        await ad.save();
+
+        return {
+          id: ad._id,
+          providerId: ad.providerId,
+          placeId: ad.placeId,
+          status: ad.status,
+          durationDays: ad.durationDays,
+          price: ad.price,
+          expireAt: ad.expireAt
+        };
+      }
+    }
+
+    if (ad.status == AdStatus.EXPIRED){
+      throw new BadRequestException('Cannot renew pending ad');
+    }
   }
 
   async getAllAds(providerId: string){
@@ -73,6 +129,10 @@ export class AdService {
 
     const adObjectId = new Types.ObjectId(adId);
     const userObjectId = new Types.ObjectId(providerId);
+
+    if (!Types.ObjectId.isValid(adId)) {
+      throw new BadRequestException('Invalid Ad ID');
+    }
 
     const ad = await this.adModel.findById(adObjectId);
     if (!ad) throw new NotFoundException('Ad not found');
@@ -222,68 +282,74 @@ export class AdService {
     }));
   }
 
+
+
   async deleteAd(adId: string, providerId: string) {
-    const ad = await this.adModel.findOne({ _id: adId, providerId: providerId });
-    if (!ad) {
-      throw new NotFoundException('Ad not found or you are not the owner');
+
+    if (!Types.ObjectId.isValid(adId)) {
+      throw new BadRequestException('Invalid ad ID format');
     }
+
+    const ad = await this.adModel.findById(adId);
+    if (!ad) {
+      throw new NotFoundException('Ad not found');
+    }
+
+    if (!ad.providerId.equals(new Types.ObjectId(providerId))) {
+      throw new ForbiddenException('You do not have permission to delete this ad');
+    }
+
     await this.adModel.deleteOne({ _id: adId });
     return { message: 'Ad deleted successfully' };
   }
 
 
-  async incrementViews(adId: string) {
-    const ad = await this.adModel.findById(adId);
-    if (!ad) throw new NotFoundException('Ad not found');
+  async incrementViews(placeId: string) {
+    const ad = await this.adModel.findOne({ placeId: placeId });
+    if (!ad){
+      console.log('Ad not found for placeId:', placeId);
+      return false;
+    }
 
     const ctr = ad.views > 0 ? parseFloat((( ad.clicks / ( ad.views + 1 )) * 100).toFixed(2)) : 0
-    const updateAd = await this.adModel.findByIdAndUpdate(adId,{ $inc: { views : 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-
-    const formatted = {
-        _id: updateAd._id,
-        providerId: updateAd.providerId,
-        placeName: updateAd.placeId.name, 
-        views: updateAd.views,
-        ctr: updateAd.ctr
-      };
-    return formatted;
+    const updateAd = await this.adModel.findByIdAndUpdate(ad._id,{ $inc: { views : 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    return true;
   }
 
-  async incrementClicks(adId: string) {
-    const ad = await this.adModel.findById(adId);
-    if (!ad) throw new NotFoundException('Ad not found');
+  async incrementClicks(placeId: string) {
+    const ad = await this.adModel.findOne({ placeId: placeId });
+    if (!ad){
+      console.log('Ad not found for placeId:', placeId);
+      return false;
+    }
 
     const ctr = ad.views > 0 ? parseFloat((((ad.clicks + 1) / ad.views) * 100).toFixed(2)) : 0
-    const updateAd = await this.adModel.findByIdAndUpdate(adId,{ $inc: { clicks: 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-    const formatted = {
-        _id: updateAd._id,
-        providerId: updateAd.providerId,
-        placeName: updateAd.placeId.name, 
-        clicks: updateAd.clicks,
-        ctr: updateAd.ctr
-      };
-    return formatted;
+    const updateAd = await this.adModel.findByIdAndUpdate(ad._id,{ $inc: { clicks: 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    return true;
   }
 
-  async incrementContacts(adId: string) {
-    const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { contacts: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-    const formatted = {
-        _id: ad._id,
-        providerId: ad.providerId,
-        placeName: ad.placeId.name, 
-        contacts: ad.contacts
-      };
-    return formatted;
+  async incrementContacts(placeId: string) {
+    const ad = await this.adModel.findOneAndUpdate({ placeId: placeId }, { $inc: { contacts: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    return true;
   }
 
-  async incrementBookings(adId: string) {
-   const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { bookings: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-    const formatted = {
-        _id: ad._id,
-        providerId: ad.providerId,
-        placeName: ad.placeId.name, 
-        bookings: ad.bookings
-      };
-      return formatted;
+  async incrementBookings(placeId: string) {
+   const ad = await this.adModel.findOneAndUpdate({ placeId: placeId }, { $inc: { bookings: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    return true;
+  }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async checkExpiredAds() {
+    const now = new Date();
+    const result = await this.adModel.updateMany(
+      {
+        status: AdStatus.ACTIVE,
+        expiredAt: { $lte: now },
+      },
+      {
+        $set: { status: AdStatus.EXPIRED },
+      },
+    );
+    console.log(`${result.modifiedCount} ads expired at ${now}`);
   }
 }

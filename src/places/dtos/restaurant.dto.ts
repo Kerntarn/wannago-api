@@ -14,11 +14,11 @@ export class CreateRestaurantDto extends CreatePlaceDto {
     @IsDateString()
     closingHours: string;
     
-    @ApiProperty()
+    @ApiProperty({ example: "Thai Street Food" })
     @IsNotEmpty()
     cuisineType: string;
-    
-    @ApiProperty()
+
+    @ApiProperty({ example: "081-234-5678" })
     @IsNotEmpty()
     contactInfo: string;
 }

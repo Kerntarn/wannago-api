@@ -32,18 +32,29 @@ export class PlacesController {
     return place;
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
   @Post('restaurant')
   createRes(@Body() createRestaurantDto: CreateRestaurantDto, @CurrentUser() user) {
     const place = this.placesService.create(createRestaurantDto, 'Restaurant', user);
     return place;
   }
 
-  @Get()
-  findAll(@Query('type') t?: FindPlaceQueryDto) {
-    return this.placesService.findAll(t as string);
+  @Get('all')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  findAllPlaces(@Query('type') t?: FindPlaceQueryDto) {
+    if (t){
+      return this.placesService.findAll(t?.type);
+    }
+    return this.placesService.findAll();
   }
+
+  @Get()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.USER)
+  findAllByUser(@CurrentUser() user, @Query('type') t?: FindPlaceQueryDto) {
+      return this.placesService.findAll(t?.type, user._id);
+  }
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {

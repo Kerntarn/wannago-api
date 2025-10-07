@@ -1,34 +1,48 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { asyncWrapProviders } from 'async_hooks';
 import { Model, ObjectId } from 'mongoose';
 import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
 import { User } from 'src/schemas/user.schema';
 import { TagsService } from 'src/tags/tags.service';
+import axios from 'axios';
+import { AdService } from 'src/ad/ad.service';
 
 @Injectable()
 export class PlacesService {
   constructor(
     @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
-    private readonly tagsService: TagsService
+    private readonly tagsService: TagsService,
+    private readonly adService: AdService
   ) {}
 
-  async create(data: any, type: string, user: User): Promise<Place> {
+  async create(data: any, type: string, user: User): Promise<PlaceDocument> {
     if (!user) throw new UnauthorizedException('User need token to create place');
-    
-    //extract Latitude and Longitude from url
-    // And Make ._toEntity()
 
-    const currentUserId = user["userId"];
+    try {
+        const coords = await this.getCoordinates(data.location);
+        data.location = coords;
+    } catch (err) {
+        throw new BadRequestException('Cannot extract coordinates from URL');
+    }
+
+    const currentUserId = user._id;
     const place = new this.placeModel({ ...data, providerId: currentUserId, type: type});
+
     return place.save();
   }
 
-  async findAll(type?: string): Promise<Place[]> {
-    let places: Place[];
-    if (type) {
-      places = await this.placeModel.find({ type: type}).exec();
-    } else{
+  async findAll(type?: string, userId?: ObjectId): Promise<PlaceDocument[]> {
+    let places: PlaceDocument[];
+    
+    if (type && userId) {
+      places = await this.placeModel.find({ type: type, providerId: userId }).exec();
+    } else if (type && !userId) {
+      places = await this.placeModel.find({ type: type }).exec();
+    } else if (!type && userId) {
+      places = await this.placeModel.find({ providerId: userId }).exec();
+    } else {
       places = await this.placeModel.find().exec();
     }
     if (places.length === 0) {
@@ -42,8 +56,9 @@ export class PlacesService {
     return this.placeModel.findById(id).exec();
   }
 
-  async findByName(name: string): Promise<Place[]> {
+  async findByName(name: string): Promise<PlaceDocument[]> {
     const places = await this.placeModel.find({ name: new RegExp(name, 'i') }).exec();
+    console.log(places);
     return places;
   }
 
@@ -71,13 +86,12 @@ export class PlacesService {
     }
   }
   
-  async getMostRelatedPlace(places: Place[], preferredTags: string[]): Promise<Place> {
+  async getMostRelatedPlace(places: PlaceDocument[], preferredTags: string[]) {
+    console.log(`This is${places}`)
     const tags = this.tagsService.getWeight();
     
-    const result = places.map(place => {
-      const score = place.tags.map(tag => {
-        return (preferredTags.includes(tag) ? tags[tag] : 0);
-      });
+   const result = places.map(place => {
+      const score = place.tags.map(tag => (preferredTags.includes(tag) ? tags[tag] : 0));
       return { ...place, score };
     });
     result.sort((a, b) => {
@@ -85,7 +99,55 @@ export class PlacesService {
       const sumB = b.score.reduce((acc, curr) => acc + curr, 0);
       return sumB - sumA;
     });
-    return result[0];
+    return result;
   }
   
+  async getCoordinates(url: string): Promise<[ number, number ]> {
+    if (!url) throw new BadRequestException('URL is required');
+
+    //short link
+    if (url.includes('goo.gl') || url.includes('maps.app.goo.gl')) {
+      try {
+        const res = await axios.get(url, {
+          maxRedirects: 0,
+          validateStatus: status => status >= 200 && status < 400,
+        } as any);
+
+        // ดึง URL จาก header location
+        const redirectUrl = res.headers['location'];
+        if (!redirectUrl) throw new BadRequestException('Cannot extract coordinates from link');
+
+        const coords = this.parseLatLng(redirectUrl);
+        if (!coords) throw new BadRequestException('Cannot extract coordinates from link');
+        return coords;
+      } catch (err: any) {
+        if (err.response?.status === 302) {
+          const redirectUrl = err.response.headers.location;
+          const coords = this.parseLatLng(redirectUrl);
+          if (!coords) throw new BadRequestException('Cannot extract coordinates from link');
+          return coords;
+        }
+        throw new BadRequestException('Invalid Google Maps URL');
+      }
+    } else {
+      //full link
+      const coords = this.parseLatLng(url);
+      if (!coords) throw new BadRequestException('Cannot extract coordinates from link');
+      return coords;
+    }
+  }
+
+  private parseLatLng(url: string): [ number, number ] | null {
+
+    let match = url.match(/@([-.\d]+),([-.\d]+)/);
+    if (match) {
+      return [parseFloat(match[1]), parseFloat(match[2])];
+    }
+
+    match = url.match(/\/place\/([-.\d]+),([-.\d]+)/);
+    if (match) {
+      return [parseFloat(match[1]), parseFloat(match[2])];
+    }
+    return null;
+  }
 }

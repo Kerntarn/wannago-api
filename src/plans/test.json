@@ -1,0 +1,37 @@
+{
+    "planId": "123",
+    "name": "Test plan",
+    "source": [100.5018, 13.7563],
+    "routes": [
+        {
+            "dateTime": "6/10/2568 14:00",
+            "departBy": "Personal Car",
+            "Distance": "10 km",
+            "Duration": "15 mins",
+            "to": {
+                "name": "Destination Place",
+                "location": [100.513, 13.752]
+            }
+        },
+        {
+            "dateTime": "6/10/2568 18:00",
+            "departBy": "Public Transport",
+            "Distance": "12 km",
+            "Duration": "25 mins",
+            "to": {
+                "name": "Hotel A",
+                "location": [100.520, 13.760]
+            }
+        },
+        {
+            "dateTime": "6/11/2568 09:00",
+            "departBy": "Bicycle",
+            "Distance": "5 km",
+            "Duration": "20 mins",
+            "to": {
+                "name": "Museum B",
+                "location": [100.530, 13.770]
+            }
+        }
+    ]
+}

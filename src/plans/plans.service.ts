@@ -31,7 +31,6 @@ export class PlansService {
 
   async createTemporary(createPlanDto: CreatePlanDto, guestId: string) {
     const newPlan = await this._toEntity(createPlanDto);
-    //Add route
     const createdPlan = new this.planModel(newPlan);
     this.guestService.addPlanToGuest(guestId, createdPlan._id);
     await createdPlan.save();
@@ -59,7 +58,7 @@ export class PlansService {
   }
 
 
-  async _toEntity(dto: CreatePlanDto): Promise<Plan> {
+  async _toEntity(dto: CreatePlanDto) {
     const allTags = await this.tagsService.findAll();
     if (!dto.preferredTags.every(tag => allTags.includes(tag))) {
       throw new BadRequestException('Some tags are not recognized');
@@ -103,7 +102,6 @@ export class PlansService {
     // calculate to find destination place and plan for user who only fill a little info
     return {
       source: dto.source,
-      destination: dst.location,
       startTime: dto.startTime,
       endTime: dto.endTime,
       preferredTags: dto.preferredTags,

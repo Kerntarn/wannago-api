@@ -1,5 +1,6 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { Type } from "class-transformer";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class CreatePlanDto {
     @ApiProperty({ example: [100.5018, 13.7563], description: 'Give me longitude and latitude of source', type: [Number]})
@@ -16,15 +17,17 @@ export class CreatePlanDto {
 
     @ApiProperty({format: 'date-time', example: new Date(),})
     @IsOptional()
-    @IsDateString()
+    @Type(() => Date)
+    @IsDate()
     startTime?: Date;
     
     @ApiProperty({format: 'date-time', example: new Date(),})
     @IsOptional()
-    @IsDateString()
+    @Type(() => Date)
+    @IsDate()
     endTime?: Date;
     
-    @ApiProperty()
+    @ApiProperty({ example: 500 })
     @IsOptional()
     @Min(0)
     budget?: number;
