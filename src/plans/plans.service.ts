@@ -21,6 +21,9 @@ export class PlansService {
 
   async create(createPlanDto: CreatePlanDto, userId: string) {
     const newPlan = await this._toEntity(createPlanDto);
+    //calculate to find destination place and plan for user who only fill a little info
+    //show plan for select
+    //Add route
     const createdPlan = new this.planModel(newPlan);
     createdPlan.save();
     return createdPlan;
@@ -96,6 +99,8 @@ export class PlansService {
     //   // some logic to pick the best match place?
     //   dst = [0, 0];
     // }
+
+    // calculate to find destination place and plan for user who only fill a little info
     return {
       source: dto.source,
       destination: dst.location,
