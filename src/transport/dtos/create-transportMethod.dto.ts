@@ -22,11 +22,4 @@ export class CreateTransportMethodDto {
       @IsOptional()
       @IsBoolean()
       hasBooking?: boolean;
-      
-      // @ApiProperty()
-      // @IsOptional()
-      // providerId?: Types.ObjectId;
-      @ApiProperty()
-      @IsOptional()
-      providerId?: string;
 }

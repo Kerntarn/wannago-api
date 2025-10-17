@@ -1,15 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, UseGuards } from '@nestjs/common';
 import { TransportMethodService } from './transportMethod.service';
 import { CreateTransportMethodDto } from './dtos/create-transportMethod.dto';
 import { UpdateTransportMethodDto } from './dtos/update-transportMethod.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
 @Controller('transport-method')
 export class TransportMethodController {
   constructor(private readonly transportService: TransportMethodService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt')
   @Post()
-  async create(@Body() dto: CreateTransportMethodDto) {
-    const created = await this.transportService.create(dto);
+  async create(@Body() dto: CreateTransportMethodDto, @CurrentUser() user) {
+    const created = await this.transportService.create(dto, user);
     return {
       message: 'TransportMethod created successfully',
       status: HttpStatus.CREATED,
@@ -37,8 +42,10 @@ export class TransportMethodController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt')
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateTransportMethodDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateTransportMethodDto, @CurrentUser() user) {
     const updated = await this.transportService.update(id, dto);
     return {
       message: 'TransportMethod updated',
@@ -47,8 +54,10 @@ export class TransportMethodController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt')
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @CurrentUser() user) {
     const deleted = await this.transportService.remove(id);
     return {
       message: 'TransportMethod deleted',

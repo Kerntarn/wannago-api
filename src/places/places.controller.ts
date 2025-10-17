@@ -39,8 +39,6 @@ export class PlacesController {
   }
 
   @Get('all')
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
   findAllPlaces(@Query('type') t?: FindPlaceQueryDto) {
     if (t){
       return this.placesService.findAll(t?.type);
