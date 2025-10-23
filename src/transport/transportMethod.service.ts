@@ -12,7 +12,7 @@ export class TransportMethodService {
     private readonly transportMethodModel: Model<TransportMethodDocument>,
   ) {}
 
-  async create(dto: CreateTransportMethodDto): Promise<TransportMethod> {
+  async create(dto: CreateTransportMethodDto): Promise<TransportMethodDocument> {
     if (dto.providerId) {
       dto.hasBooking = true;
     }
@@ -20,23 +20,29 @@ export class TransportMethodService {
     return created.save();
   }
 
-  async findAll(): Promise<TransportMethod[]> {
+  async findAll(): Promise<TransportMethodDocument[]> {
     return this.transportMethodModel.find().exec();
   }
 
-  async findOne(id: string): Promise<TransportMethod> {
+  async findOne(id: string): Promise<TransportMethodDocument> {
     const transport = await this.transportMethodModel.findById(id).exec();
     if (!transport) throw new NotFoundException(`TransportMethod #${id} not found`);
     return transport;
   }
 
-  async update(id: string, dto: UpdateTransportMethodDto): Promise<TransportMethod> {
+  async findByName(name: string): Promise<TransportMethodDocument> {
+    const transport = await this.transportMethodModel.findOne({ name }).exec();
+    if (!transport) throw new NotFoundException(`TransportMethod with name ${name} not found`);
+    return transport;
+  }
+
+  async update(id: string, dto: UpdateTransportMethodDto): Promise<TransportMethodDocument> {
     const updated = await this.transportMethodModel.findByIdAndUpdate(id, dto, { new: true }).exec();
     if (!updated) throw new NotFoundException(`TransportMethod #${id} not found`);
     return updated;
   }
 
-  async remove(id: string): Promise<TransportMethod> {
+  async remove(id: string): Promise<TransportMethodDocument> {
     const deleted = await this.transportMethodModel.findByIdAndDelete(id).exec();
     if (!deleted) throw new NotFoundException(`TransportMethod #${id} not found`);
     return deleted;

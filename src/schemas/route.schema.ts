@@ -2,6 +2,15 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { TransportMethod } from "./transportMethod.schema";
 import mongoose, { Types } from "mongoose";
 
+@Schema({ _id: false })
+class Point {
+  @Prop()
+  name: string;
+
+  @Prop({ type: [Number, Number] })
+  location: [number, number];
+}
+
 @Schema()
 export class Route {
   @Prop({ required: true, type: Date })
@@ -16,11 +25,8 @@ export class Route {
   @Prop({ required: true }) //minutes
   duration: number;
 
-  @Prop({ required: true })
-  to: {
-    name: string;
-    location: [number, number];
-  };
+  @Prop({ required: true, type: Point })
+  to: Point;
 }
 
 export const RouteSchema = SchemaFactory.createForClass(Route);

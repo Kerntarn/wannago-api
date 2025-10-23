@@ -1,7 +1,6 @@
-import mongoose, { HydratedDocument, Model, ObjectId } from "mongoose";
-import { Place } from "./place.schema";
+import mongoose, { HydratedDocument, Model } from "mongoose";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Route, RouteSchema } from "./route.schma";
+import { ItineraryDay, ItineraryDaySchema, LocationInItinerary } from "src/schemas/itinerary.schema";
 
 export type planDocument = HydratedDocument<Plan>;
 
@@ -10,29 +9,50 @@ export class Plan{
     @Prop()
     name?: string; // Removed `required: true` since it is auto-filled in the pre-save middleware
 
-    @Prop( {required: true, type: [Number]})
+    @Prop({ required: true, type: [Number] })
     source: number[];
 
-    @Prop( {required: true, type: Date})
-    startTime: Date;
-    
-    @Prop( {required: true, type: Date})
-    endTime: Date;
-    
-    @Prop( {required: true})
+    @Prop({ required: true })
     preferredTags: string[];
-    
-    @Prop( {required: true})
+
+    @Prop({ required: true })
     budget: number;
-    
-    @Prop( {required: true, default: 1})
+
+    @Prop({ required: true, default: 1 })
     groupSize?: number;
-    
-    @Prop( {required: false })
+
+    @Prop({ required: false })
     ownerId: string;
 
-    @Prop( {required: true, type: [RouteSchema] })
-    routes: Route[];
+    @Prop()
+    title: string;
+
+    @Prop({ type: [String] })
+    category: string[];
+
+    @Prop()
+    transportation: string;
+
+    @Prop({ required: true, default: 1 })
+    people: number;
+
+    @Prop({ required: true, type: Date })
+    startDate: Date;
+
+    @Prop({ required: true, type: Date })
+    endDate: Date;
+
+    @Prop({ type: mongoose.Schema.Types.Mixed })
+    itinerary: Record<string, ItineraryDay>;
+
+    @Prop({ type: [String] })
+    destinations?: string[];
+
+    @Prop()
+    isReturn?: boolean;
+
+    @Prop({ type: mongoose.Schema.Types.Mixed })
+    suggestedDestinations?: any;
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);
