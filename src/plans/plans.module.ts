@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { GuestModule } from 'src/guest/guest.module';
 import { PlacesModule } from 'src/places/places.module';
 import { TagsModule } from 'src/tags/tags.module';
+import { TransportModule } from 'src/transport/transportMethod.module'; // Import TransportModule
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { TagsModule } from 'src/tags/tags.module';
     GuestModule,
     PlacesModule,
     TagsModule,
+    TransportModule, // Add TransportModule to imports
   ],
   controllers: [PlansController],
   providers: [PlansService],

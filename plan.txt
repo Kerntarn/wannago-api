@@ -1,0 +1,24 @@
+/// Case มี Destination
+{
+    "source": [100.5018, 13.7563],
+    "destination": "65275a5e3620e67160ad3651",
+    "startTime": "2025-12-01T09:00:00Z",
+    "endTime": "2025-12-01T17:00:00Z",
+    "budget": 1000,
+    "groupSize": 2,
+    "transit": ["Taxi"],
+    "preferredTags": ["culture", "history"]
+}
+
+/// Case ไม่มี Destination
+{
+    "source": [100.5018, 13.7563],
+    "startTime": "2025-12-01T09:00:00Z",
+    "endTime": "2025-12-01T17:00:00Z",
+    "budget": 1000,
+    "groupSize": 2,
+    "transit": ["Taxi"],
+    "preferredTags": ["culture", "history"]
+}
+
+ให้ใส่ plan ไปเลย ยัดลง Plan ให้หมด

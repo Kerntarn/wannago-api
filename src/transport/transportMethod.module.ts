@@ -8,5 +8,6 @@ import { TransportMethod, TransportMethodSchema } from '../schemas/transportMeth
   imports: [MongooseModule.forFeature([{ name: TransportMethod.name, schema: TransportMethodSchema }])],
   controllers: [TransportMethodController],
   providers: [TransportMethodService],
+  exports: [TransportMethodService], // Export TransportMethodService
 })
 export class TransportModule {}
