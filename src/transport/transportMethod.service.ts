@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { CreateTransportMethodDto } from './dtos/create-transportMethod.dto';
 import { UpdateTransportMethodDto } from './dtos/update-transportMethod.dto';
 import { TransportMethod, TransportMethodDocument } from '../schemas/transportMethod.schema';
+import { User, UserRole } from 'src/schemas/user.schema';
 
 @Injectable()
 export class TransportMethodService {
@@ -12,11 +13,11 @@ export class TransportMethodService {
     private readonly transportMethodModel: Model<TransportMethodDocument>,
   ) {}
 
-  async create(dto: CreateTransportMethodDto): Promise<TransportMethodDocument> {
-    if (dto.providerId) {
+  async create(dto: CreateTransportMethodDto, user: User): Promise<TransportMethod> {
+    if (user.role === UserRole.USER) {
       dto.hasBooking = true;
     }
-    const created = new this.transportMethodModel(dto);
+    const created = new this.transportMethodModel({ ...dto, providerId: user._id });
     return created.save();
   }
 

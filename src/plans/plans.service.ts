@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { CreatePlanDto, UpdatePlanDto } from 'src/plans/plan.dto';
+import { Model, ObjectId } from 'mongoose';
 import { Plan, planDocument } from 'src/schemas/plan.schema';
 import { GuestService } from 'src/guest/guest.service';
 import { PlacesService } from 'src/places/places.service';
@@ -39,7 +39,11 @@ export class PlansService {
     return this.planModel.findByIdAndUpdate(planId, { ownerId: userId }).exec();
   }
 
-  findAll() {
+  findAll(userId?: ObjectId) {
+    if (userId) {
+      return this.planModel.find({ ownerId: userId }).exec();
+    }
+
     return this.planModel.find().exec();
   }
 
