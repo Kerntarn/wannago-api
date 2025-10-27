@@ -20,7 +20,7 @@ export class AdService {
     private readonly userService: UsersService,
     private readonly transactionService: TransactionService,
     @InjectModel(Ad.name) private adModel: Model<AdDocument>,
-    @InjectModel(Place.name) private placeModel: Model<Place>,
+    @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
   ) {}
 
   //สร้าง
@@ -328,57 +328,36 @@ export class AdService {
 
   async incrementViews(placeId: string) {
     const ad = await this.adModel.findOne({ placeId: placeId });
-    if (!ad) throw new NotFoundException('Ad not found');
+    if (!ad){
+      console.log('Ad not found for placeId:', placeId);
+      return false;
+    }
 
     const ctr = ad.views > 0 ? parseFloat((( ad.clicks / ( ad.views + 1 )) * 100).toFixed(2)) : 0
     const updateAd = await this.adModel.findByIdAndUpdate(ad._id,{ $inc: { views : 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-
-    const formatted = {
-        _id: updateAd._id,
-        providerId: updateAd.providerId,
-        placeName: updateAd.placeId.name, 
-        views: updateAd.views,
-        ctr: updateAd.ctr
-      };
-    return formatted;
+    return true;
   }
 
   async incrementClicks(placeId: string) {
     const ad = await this.adModel.findOne({ placeId: placeId });
-    if (!ad) throw new NotFoundException('Ad not found');
+    if (!ad){
+      console.log('Ad not found for placeId:', placeId);
+      return false;
+    }
 
     const ctr = ad.views > 0 ? parseFloat((((ad.clicks + 1) / ad.views) * 100).toFixed(2)) : 0
     const updateAd = await this.adModel.findByIdAndUpdate(ad._id,{ $inc: { clicks: 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-    const formatted = {
-        _id: updateAd._id,
-        providerId: updateAd.providerId,
-        placeName: updateAd.placeId.name, 
-        clicks: updateAd.clicks,
-        ctr: updateAd.ctr
-      };
-    return formatted;
+    return true;
   }
 
   async incrementContacts(placeId: string) {
     const ad = await this.adModel.findOneAndUpdate({ placeId: placeId }, { $inc: { contacts: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-    const formatted = {
-        _id: ad._id,
-        providerId: ad.providerId,
-        placeName: ad.placeId.name, 
-        contacts: ad.contacts
-      };
-    return formatted;
+    return true;
   }
 
   async incrementBookings(placeId: string) {
    const ad = await this.adModel.findOneAndUpdate({ placeId: placeId }, { $inc: { bookings: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-    const formatted = {
-        _id: ad._id,
-        providerId: ad.providerId,
-        placeName: ad.placeId.name, 
-        bookings: ad.bookings
-      };
-      return formatted;
+    return true;
   }
 
   @Cron(CronExpression.EVERY_10_SECONDS)

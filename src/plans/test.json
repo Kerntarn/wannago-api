@@ -1,0 +1,53 @@
+[
+  {
+    "case": "With destinations (1 person)",
+    "data": {
+      "title": "เที่ยวกรุงเทพ...แบบชิลๆ",
+      "category": ["ปีนผา", "ทะเล", "ธรรมชาติ"],
+      "budget": 500,
+      "transportation": "รถยนต์ส่วนตัว",
+      "people": 1,
+      "startDate": "2025-09-28",
+      "endDate": "2025-09-30",
+      "source": [100.5018, 13.7563],
+      "preferredTags": ["solo-travel"],
+      "destinations": ["65275a5e3620e67160ad3651", "65275a5e3620e67160ad3652"],
+      "isReturn": true
+    }
+  },
+  {
+    "case": "Couple's Trip (2 people)",
+    "data": {
+      "title": "Romantic Bangkok Date",
+      "category": ["dining", "relax"],
+      "budget": 10000,
+      "transportation": "taxi",
+      "people": 2,
+      "startDate": "2025-12-10",
+      "endDate": "2025-12-11",
+      "source": [100.5404, 13.7235],
+      "preferredTags": ["couple", "romantic", "dining"],
+      "destinations": [
+        "65275a5e3620e67160ad3658", 
+        "65275a5e3620e67160ad3657"
+      ],
+      "isReturn": false
+    }
+  },
+  {
+    "case": "Without destinations (suggestion mode)",
+    "data": {
+      "title": "Trip to somewhere new",
+      "category": ["shopping"],
+      "budget": 2500,
+      "transportation": "public-transport",
+      "people": 1,
+      "startDate": "2025-10-10",
+      "endDate": "2025-10-12",
+      "source": [100.5501, 13.8029],
+      "preferredTags": ["market", "food"],
+      "destinations": [],
+      "isReturn": false
+    }
+  }
+]
