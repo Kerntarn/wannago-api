@@ -12,14 +12,8 @@ export class Plan{
     @Prop({ required: true, type: [Number] })
     source: number[];
 
-    @Prop({ required: true })
-    preferredTags: string[];
-
-    @Prop({ required: true })
+    @Prop({ required: false })
     budget: number;
-
-    @Prop({ required: true, default: 1 })
-    groupSize?: number;
 
     @Prop({ required: false })
     ownerId: string;
@@ -27,32 +21,29 @@ export class Plan{
     @Prop()
     title: string;
 
-    @Prop({ type: [String] })
+    @Prop({ type: [String], required: true })
     category: string[];
 
-    @Prop()
+    @Prop({ required: false })
     transportation: string;
 
-    @Prop({ required: true, default: 1 })
+    @Prop({ required: false, default: 1 })
     people: number;
 
-    @Prop({ required: true, type: Date })
+    @Prop({ required: false, type: Date })
     startDate: Date;
 
-    @Prop({ required: true, type: Date })
+    @Prop({ required: false, type: Date })
     endDate: Date;
 
     @Prop({ type: mongoose.Schema.Types.Mixed })
     itinerary: Record<string, ItineraryDay>;
 
-    @Prop({ type: [String] })
-    destinations?: string[];
-
-    @Prop()
-    isReturn?: boolean;
-
     @Prop({ type: mongoose.Schema.Types.Mixed })
     suggestedDestinations?: any;
+
+    @Prop({ required: false, description: 'The general destination or region for the plan. Can be optional if specific destinations are not yet decided.' })
+    where?: string;
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);
