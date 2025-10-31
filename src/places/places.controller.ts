@@ -45,7 +45,7 @@ export class PlacesController {
   }
 
   @Get('all')
-  findAllPlaces(@Query('typ') t?: FindPlaceQueryDto) {
+  findAllPlaces(@Query('type') t?: FindPlaceQueryDto) {
     if (t){
       return this.placesService.findAll(String(t));
     }
@@ -55,7 +55,7 @@ export class PlacesController {
   @Get()    // Get by service provider to see their own places
   @UseGuards(RolesGuard)
   @Roles(UserRole.PROVIDER)
-  findAllByUser(@CurrentUser() user, @Query('typ') t?: FindPlaceQueryDto) {
+  findAllByUser(@CurrentUser() user, @Query('type') t?: FindPlaceQueryDto) {
       return this.placesService.findAll(String(t?.type), user._id);
   }
 
