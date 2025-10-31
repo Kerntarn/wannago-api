@@ -49,8 +49,8 @@ export class TransportMethodService {
     return deleted;
   }
 
-  async getTransportMethodsForPlan(transportationType: string): Promise<TransportMethodDocument[]> {
-    let result = await this.transportMethodModel.find({ type: transportationType, hasBooking: true }).exec();
+  async getTransportMethodsForPlan(): Promise<TransportMethod[]> {
+    let result = await this.transportMethodModel.find({ hasBooking: true }).select('-createdAt -updatedAt -hasBooking').exec();
 
     return result.sort(() => Math.random() - 0.5).slice(0, 2);
   }

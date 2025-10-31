@@ -20,6 +20,9 @@ export class TransportMethod {
 
       @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false })
       providerId?: mongoose.Types.ObjectId;
+
+      @Prop({ required: false, default: 'https://i.ebayimg.com/images/g/JzEAAOSwX61ZDBsv/s-l400.jpg' })
+      imageUrl?: string;
 }
 
 export const TransportMethodSchema = SchemaFactory.createForClass(TransportMethod);

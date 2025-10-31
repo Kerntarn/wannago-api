@@ -9,6 +9,7 @@ import { TagsService } from 'src/tags/tags.service';
 import { PlaceDocument } from 'src/schemas/place.schema';
 import { TransportMethodService } from 'src/transport/transportMethod.service';
 import { ItineraryDay, LocationInItinerary } from 'src/schemas/itinerary.schema';
+import { TransportMethod } from 'src/schemas/transportMethod.schema';
 
 @Injectable()
 export class PlansService {
@@ -23,9 +24,9 @@ export class PlansService {
   async create(createPlanDto: CreatePlanDto, userId: string) {
     const newPlan = await this.generatePlan(createPlanDto);
     const createdPlan = new this.planModel({ ...newPlan, ownerId: userId });
-    let transportMethods = [];
+    let transportMethods: TransportMethod[] = [];
     if (createdPlan.transportation !== "รถยนต์ส่วนตัว"){
-      transportMethods = await this.transportMethodService.getTransportMethodsForPlan(createPlanDto.transportation);
+      transportMethods = await this.transportMethodService.getTransportMethodsForPlan();
     }
 
     await createdPlan.save();
