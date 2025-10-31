@@ -53,37 +53,48 @@ export class CreatePlanDto {
 
 export class UpdatePlanDto {
 
-    @ApiProperty({ example: "64b7f8e2c9e77c0015f4d2a1" })
+    @ApiProperty({ example: "69049873acdf59f8f5f4469d" })
+    @IsNotEmpty()
     _id: string;
-
+    
     @ApiProperty()
+    @IsNotEmpty()
     budget: number;
     
     @ApiProperty()
+    @IsNotEmpty()
     ownerId: string;
     
     @ApiProperty()
+    @IsNotEmpty()
     title: string;
     
     @ApiProperty()
+    @IsNotEmpty()
     category: string[];
     
     @ApiProperty()
+    @IsNotEmpty()
     transportation: string;
     
     @ApiProperty()
+    @IsNotEmpty()
     people: number;
-
+    
     @ApiProperty()
+    @IsNotEmpty()
     startDate: string;
-
+    
     @ApiProperty()
+    @IsNotEmpty()
     endDate: string;
-
+    
     @ApiProperty()
+    @IsNotEmpty()
     itinerary: Record<string, Itinerary>;
-
+    
     @ApiProperty()
+    @IsNotEmpty()
     where: string;
 }
 

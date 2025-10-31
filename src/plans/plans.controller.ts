@@ -53,8 +53,11 @@ export class PlansController {
     return this.plansService.findAll(currentUser._id)
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt')
   @Put(':id')
   update(@Body() updatePlanDto: UpdatePlanDto, @CurrentUser() user: User) {
+    console.log('pass update plan')
     return this.plansService.update(updatePlanDto, user._id);
   }
 

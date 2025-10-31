@@ -52,7 +52,6 @@ export class PlacesService {
         return typeMatch && userIdMatch;
       });
     }
-
     let places: PlaceDocument[];
     
     if (type && userId) {
