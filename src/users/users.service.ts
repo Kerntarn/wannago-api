@@ -2,7 +2,7 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { User, UserDocument } from '../schemas/user.schema';
+import { User, UserDocument, UserRole } from '../schemas/user.schema';
 import { RegisterDto } from 'src/auth/dtos/register.dto';
 
 @Injectable()
@@ -17,7 +17,8 @@ export class UsersService {
             lastName, 
             userName, 
             profileImage, 
-            phoneNumber 
+            phoneNumber,
+            isProvider
         } = registerDto;
 
         const existingUser = await this.userModel.findOne({
@@ -27,7 +28,7 @@ export class UsersService {
             throw new ConflictException('Email or username already exists');
         }
 
-        
+        let role = registerDto.isProvider ? UserRole.PROVIDER : UserRole.USER;
         const createdUser = new this.userModel({
             email,
             password,
@@ -35,7 +36,8 @@ export class UsersService {
             lastName,
             userName,
             profileImage,
-            phoneNumber
+            phoneNumber,
+            role
         });
 
         return createdUser.save();
