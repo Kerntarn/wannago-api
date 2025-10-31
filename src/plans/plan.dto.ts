@@ -41,8 +41,8 @@ export class CreatePlanDto {
     @IsDateString()
     endDate?: string;
 
-    @ApiProperty({ example: [100.5018, 13.7563], description: 'Give me longitude and latitude of source', type: [Number] })
-    @IsNotEmpty()
+    @ApiProperty({ example: [100.5018, 13.7563], description: 'Give me longitude and latitude of source', type: [Number] , required: false })
+    @IsOptional()
     @IsArray()
     @IsNumber({}, { each: true })
     @ArrayMinSize(2, { message: 'Give me longitude and latitude of source' })
