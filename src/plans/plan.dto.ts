@@ -2,6 +2,7 @@ import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
 import { ObjectId } from "mongoose";
+import { Place } from "src/schemas/place.schema";
 
 export class CreatePlanDto {
     @ApiProperty({ example: "อีสานใต้", description: 'Optional destination or region for the plan', required: false })
@@ -61,7 +62,17 @@ export class UpdatePlanDto {
     people: number;
     startDate: string;
     endDate: string;
-    itinerary: Record<string, any>;
+    itinerary: Record<string, Itinerary>;
     where: string;
-    startPoint: Record<string, any>;
+}
+
+
+class PlaceWithTime extends PartialType(Place) {
+    startTime: Date;
+    endTime: Date;
+}
+
+class Itinerary {
+    description: string;
+    locations: PlaceWithTime[];
 }

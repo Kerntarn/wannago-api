@@ -20,24 +20,32 @@ import { UserRole } from '../schemas/user.schema';
 export class PlacesController {
   constructor(private readonly placesService: PlacesService) {}
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Post('accommodation')
   createAcc(@Body() createAccommodatinDto: CreateAccommodationDto, @CurrentUser() user) {
     const place = this.placesService.create(createAccommodatinDto, 'Accommodation', user);
     return place;
   }
   
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Post('attraction')
   createAtt(@Body() createAttractionDto: CreateAttractionDto, @CurrentUser() user) {
     const place = this.placesService.create(createAttractionDto, 'Attraction', user);
     return place;
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Post('restaurant')
   createRes(@Body() createRestaurantDto: CreateRestaurantDto, @CurrentUser() user) {
     const place = this.placesService.create(createRestaurantDto, 'Restaurant', user);
     return place;
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('all')
   findAllPlaces(@Query('type') t?: FindPlaceQueryDto) {
     if (t){
@@ -59,24 +67,32 @@ export class PlacesController {
     return this.placesService.findOne(id);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Patch('accommodation/:id')
   updateAcc(@Param('id') id: string, @Body() updateAccommodationDto: UpdateAccommodationDto, @CurrentUser() user) {
     return this.placesService.update(id, updateAccommodationDto, 'Accommodation', user._id);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Patch('attraction/:id')
   updateAtt(@Param('id') id: string, @Body() updateAttractionDto: UpdateAttractionDto, @CurrentUser() user) {
     console.log("User in updateAtt:", user);
     return this.placesService.update(id, updateAttractionDto, 'Attraction', user._id);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Patch('restaurant/:id')
   updateRes(@Param('id') id: string, @Body() updateRestaurantDto: UpdateRestaurantDto, @CurrentUser() user) {
     return this.placesService.update(id, updateRestaurantDto, 'Restaurant', user._id);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    this.placesService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user) {
+    this.placesService.remove(id, user._id);
   }
 }

@@ -112,12 +112,11 @@ export class PlacesService {
     return place.save();
   }
 
-  async remove(id: string) {
+  async remove(id: string, curUserId: ObjectId) {
     if (this.useMockData) {
       throw new Error('Remove operation not supported with mock data');
     }
-    const currentUserId = "001";
-    const deleted = await this.placeModel.findOneAndDelete({ _id: id, providerId: currentUserId}).exec();
+    const deleted = await this.placeModel.findOneAndDelete({ _id: id, providerId: curUserId }).exec();
     if (!deleted) {
       throw new NotFoundException(`Place with ID ${id} not found or not owned by user`);
     }
