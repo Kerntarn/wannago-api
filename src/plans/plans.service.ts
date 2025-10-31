@@ -8,7 +8,10 @@ import { PlacesService } from 'src/places/places.service';
 import { TagsService } from 'src/tags/tags.service';
 import { PlaceDocument } from 'src/schemas/place.schema';
 import { TransportMethodService } from 'src/transport/transportMethod.service';
-import { ItineraryDay, LocationInItinerary } from 'src/schemas/itinerary.schema';
+import {
+  ItineraryDay,
+  LocationInItinerary,
+} from 'src/schemas/itinerary.schema';
 
 @Injectable()
 export class PlansService {
@@ -59,10 +62,11 @@ export class PlansService {
     return this.planModel.findByIdAndDelete(id).exec();
   }
 
-
   async generatePlan(dto: CreatePlanDto): Promise<Partial<Plan>> {
     const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
-    const endDate = dto.endDate ? new Date(dto.endDate) : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); // Default to 3 days trip
+    const endDate = dto.endDate
+      ? new Date(dto.endDate)
+      : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); // Default to 3 days trip
 
     const planEntity: Partial<Plan> = {
       title: `ทริป ${dto.where || 'ไร้ชื่อ'}`,
@@ -77,7 +81,9 @@ export class PlansService {
       itinerary: {},
     };
 
-    const diffTime = Math.abs(planEntity.endDate.getTime() - planEntity.startDate.getTime());
+    const diffTime = Math.abs(
+      planEntity.endDate.getTime() - planEntity.startDate.getTime(),
+    );
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
     // Create an empty itinerary for the duration
@@ -86,12 +92,15 @@ export class PlansService {
       currentDate.setDate(planEntity.startDate.getDate() + i);
       const dateString = currentDate.toISOString().split('T')[0];
       const dayName = currentDate.toLocaleString('th-TH', { weekday: 'long' });
-      const date = currentDate.toLocaleString('th-TH', { day: 'numeric', month: 'long' });
+      const date = currentDate.toLocaleString('th-TH', {
+        day: 'numeric',
+        month: 'long',
+      });
 
       planEntity.itinerary[dateString] = {
         dayName: dayName,
         date: date,
-        description: "",
+        description: '',
         locations: [] as any,
         travelTimes: [],
       };
@@ -100,9 +109,15 @@ export class PlansService {
     const addLocationsToItinerary = (places: PlaceDocument[]) => {
       const days = Object.keys(planEntity.itinerary);
 
-      const attractions = places.filter(p => (p as any).type === 'attraction');
-      const restaurants = places.filter(p => (p as any).type === 'restaurant');
-      const accommodations = places.filter(p => (p as any).type === 'accommodation');
+      const attractions = places.filter(
+        (p) => (p as any).type === 'attraction',
+      );
+      const restaurants = places.filter(
+        (p) => (p as any).type === 'restaurant',
+      );
+      const accommodations = places.filter(
+        (p) => (p as any).type === 'accommodation',
+      );
 
       const availableRestaurants = [...restaurants];
       const availableAccommodations = [...accommodations];
@@ -115,11 +130,11 @@ export class PlansService {
         const dayAttractions = attractions.slice(startIndex, endIndex);
 
         const dayPlaces = [...dayAttractions];
-        
+
         if (availableRestaurants.length > 0) {
           dayPlaces.push(availableRestaurants.shift());
         }
-        
+
         if (availableAccommodations.length > 0) {
           dayPlaces.push(availableAccommodations.shift());
         }
@@ -139,13 +154,12 @@ export class PlansService {
       const places = await this.placesService.findByName(dto.where);
       addLocationsToItinerary(places);
     } else if (dto.source) {
-      const defaultPlaces = await this.placesService.findDefaultPlaces(dto.category);
+      const defaultPlaces = await this.placesService.findDefaultPlaces(
+        dto.category,
+      );
       addLocationsToItinerary(defaultPlaces);
     }
 
     return planEntity;
   }
-
-
 }
-
