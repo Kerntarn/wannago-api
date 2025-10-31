@@ -96,6 +96,12 @@ export class UpdatePlanDto {
     @ApiProperty()
     @IsNotEmpty()
     where: string;
+
+    @ApiProperty({ example: [100.5018, 13.7563] })
+    @IsNotEmpty()
+    @IsArray()
+    @IsNumber({}, { each: true })
+    source: number[];
 }
 
 
