@@ -54,8 +54,8 @@ export class PlansController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updatePlanDto: UpdatePlanDto) {
-    return this.plansService.update(id, updatePlanDto);
+  update(@Body() updatePlanDto: UpdatePlanDto, @CurrentUser() user: User) {
+    return this.plansService.update(updatePlanDto, user._id);
   }
 
   @UseGuards(JwtAuthGuard)
