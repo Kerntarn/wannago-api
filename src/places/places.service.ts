@@ -52,8 +52,8 @@ export class PlacesService {
         return typeMatch && userIdMatch;
       });
     }
+    console.log("type:", typeof(type));
     let places: PlaceDocument[];
-    
     if (type && userId) {
       places = await this.placeModel.find({ type: type, providerId: userId }).exec();
     } else if (type && !userId) {
@@ -61,6 +61,7 @@ export class PlacesService {
     } else if (!type && userId) {
       places = await this.placeModel.find({ providerId: userId }).exec();
     } else {
+      console.log('all case');
       places = await this.placeModel.find().exec();
     }
     if (places.length === 0) {

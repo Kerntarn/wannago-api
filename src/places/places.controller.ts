@@ -46,7 +46,7 @@ export class PlacesController {
 
   @Get('all')
   findAllPlaces(@Query('type') t?: FindPlaceQueryDto) {
-    if (t){
+    if (typeof(t) == "string"){
       return this.placesService.findAll(String(t));
     }
     return this.placesService.findAll();
@@ -56,7 +56,11 @@ export class PlacesController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.PROVIDER)
   findAllByUser(@CurrentUser() user, @Query('type') t?: FindPlaceQueryDto) {
-      return this.placesService.findAll(String(t?.type), user._id);
+    console.log("type", typeof(t))
+    if (typeof(t) == "string") {
+      return this.placesService.findAll(String(t), user._id);
+    }
+    return this.placesService.findAll(undefined, user._id);
   }
 
 
