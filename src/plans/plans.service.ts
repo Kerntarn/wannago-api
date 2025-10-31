@@ -50,15 +50,29 @@ export class PlansService {
     return this.planModel.find().exec();
   }
 
-  findOne(id: string) {
-    return this.planModel.findById(id).exec();
+  async findOne(id: string, curUserId: ObjectId) {
+    console.log(id);
+    const plan = await this.planModel.findById(id).exec();
+    let isOwner = true;
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        isOwner = false;
+    }
+
+    return { plan, isOwner };
+
   }
 
   update(id: string, updatePlanDto: UpdatePlanDto) {
     return this.planModel.findByIdAndUpdate(id, updatePlanDto).exec();
   }
 
-  remove(id: string) {
+  async remove(id: string, curUserId: ObjectId) {
+    const plan = await this.planModel.findById(id).exec();
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        throw new BadRequestException('You are not authorized to delete this plan.');
+    }
+    
+
     return this.planModel.findByIdAndDelete(id).exec();
   }
 

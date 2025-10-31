@@ -16,7 +16,7 @@ export class AdController {
 
   //สร้าง add
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
+  @Roles(UserRole.PROVIDER)
   @Post()
   async create(@CurrentUser() user: any,@Body() createAdDto: CreateAdDto) {
     const userId = user._id;
@@ -26,7 +26,7 @@ export class AdController {
 
   //ดู dash board มีสถิติ กราฟ ตารางสถานะ
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
+  @Roles(UserRole.PROVIDER)
   @Get()
   async get(@CurrentUser() user: any) {
     const userId = user._id;
@@ -36,7 +36,7 @@ export class AdController {
 
   //ลบ ad by id
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
+  @Roles(UserRole.PROVIDER)
   @Delete(':adId')
   async deleteAd(@CurrentUser() user: any, @Param('adId') adId: string) {
     const ownerId = user._id;
@@ -45,7 +45,7 @@ export class AdController {
 
   //ad stat
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
+  @Roles(UserRole.PROVIDER)
   @Get(':adId')
   async getAdById(@CurrentUser() user: any, @Param('adId') adId: string) {
     const ownerId = user._id;
@@ -57,7 +57,7 @@ export class AdController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
+  @Roles(UserRole.PROVIDER)
   @Patch('/renew/:adId')
   async renew(@CurrentUser() user: any, @Param('adId') adId: string, @Body() renewAdDto: RenewAdDto) {
     const ownerId = user._id;

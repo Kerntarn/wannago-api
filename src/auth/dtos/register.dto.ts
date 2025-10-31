@@ -1,4 +1,4 @@
-import { IsEmail, IsString, Length, MinLength, IsOptional, IsPhoneNumber, Min, IsUrl } from 'class-validator';
+import { IsEmail, IsString, Length, MinLength, IsOptional, IsPhoneNumber, Min, IsUrl, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Match } from '../decorators/match.decorator';
 
@@ -46,4 +46,8 @@ export class RegisterDto {
     @IsOptional()
     @IsString()
     guestToken?: string;
+
+    @ApiProperty({ default: false })
+    @IsBoolean()
+    isProvider: boolean;
 }
