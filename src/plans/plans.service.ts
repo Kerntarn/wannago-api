@@ -79,7 +79,7 @@ export class PlansService {
 
 
   async generatePlan(dto: CreatePlanDto): Promise<Partial<Plan>> {
-    const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
+    const startDate = dto.startDate ? new Date(dto.startDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Default to one week from now
     const endDate = dto.endDate ? new Date(dto.endDate) : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); // Default to 3 days trip
 
     const planEntity: Partial<Plan> = {
