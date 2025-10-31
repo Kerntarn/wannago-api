@@ -135,7 +135,7 @@ export class PlansService {
       });
     };
 
-    if (dto.where) {
+    if (dto.where || dto.where === '') {
       const places = await this.placesService.findByName(dto.where);
       addLocationsToItinerary(places);
     } else if (dto.source) {
