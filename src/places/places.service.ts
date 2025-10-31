@@ -8,7 +8,6 @@ import { User } from 'src/schemas/user.schema';
 import { TagsService } from 'src/tags/tags.service';
 import axios from 'axios';
 import { AdService } from 'src/ad/ad.service';
-import { mockPlaces } from './mock-places'; // Import mock data
 import { mockIsanPlaces } from './mock-isan-places';
 import { mockChiangmaiPlaces } from './mock-chiangmai-places';
 import { mockBangkokAdventurePlaces } from './mock-bangkok-adventure-places';
@@ -46,7 +45,7 @@ export class PlacesService {
 
   async findAll(type?: string, userId?: ObjectId): Promise<PlaceDocument[]> {
     if (this.useMockData) {
-      return mockPlaces.filter(place => {
+      return mockBangkokAdventurePlaces.filter(place => {
         const typeMatch = type ? (place as any).__t === type : true;
         const userIdMatch = userId ? place.providerId.toString() === userId.toString() : true;
         return typeMatch && userIdMatch;
@@ -73,7 +72,7 @@ export class PlacesService {
 
   findOne(id: string): Promise<PlaceDocument> {
     if (this.useMockData) {
-      return Promise.resolve(mockPlaces.find(place => place._id.toString() === id));
+      return Promise.resolve(mockBangkokAdventurePlaces.find(place => place._id.toString() === id));
     }
     return this.placeModel.findById(id).exec();
   }
@@ -209,7 +208,7 @@ export class PlacesService {
   ): Promise<PlaceDocument[]> {
     if (this.useMockData) {
       return Promise.resolve(
-        mockPlaces
+        mockBangkokAdventurePlaces
           .filter(place => place._id.toString() !== excludedPlaceId)
           .sort((a, b) => this.getDistanceBetweenCoordinates(coordinate, a.location as [number, number]) -
                            this.getDistanceBetweenCoordinates(coordinate, b.location as [number, number]))
@@ -240,7 +239,7 @@ export class PlacesService {
       }
     }
     // Fallback to a default list if no matching categories
-    return Promise.resolve(mockPlaces.slice(0, 3));
+    return Promise.resolve(mockBangkokAdventurePlaces.slice(0, 3));
   }
 
   private parseLatLng(url: string): [ number, number ] | null {
