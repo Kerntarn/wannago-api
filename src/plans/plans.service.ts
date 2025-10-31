@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreatePlanDto, UpdatePlanDto } from 'src/plans/plan.dto';
 import { Model, ObjectId } from 'mongoose';
@@ -59,16 +59,20 @@ export class PlansService {
 
   }
 
-  update(id: string, updatePlanDto: UpdatePlanDto) {
-    return this.planModel.findByIdAndUpdate(id, updatePlanDto).exec();
+  async update(updatePlanDto: UpdatePlanDto, curUserId: ObjectId) {
+    const plan = await this.planModel.findById(updatePlanDto._id).exec();
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        throw new ForbiddenException('You are not authorized to update this plan.');
+    }
+    return this.planModel.findByIdAndUpdate(updatePlanDto._id, updatePlanDto, { new: true }).exec();
   }
 
   async remove(id: string, curUserId: ObjectId) {
     const plan = await this.planModel.findById(id).exec();
     if (plan.ownerId.toString() !== curUserId.toString()) {
-        throw new BadRequestException('You are not authorized to delete this plan.');
+        throw new ForbiddenException('You are not authorized to delete this plan.');
     }
-    
+
 
     return this.planModel.findByIdAndDelete(id).exec();
   }
