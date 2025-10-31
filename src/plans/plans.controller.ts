@@ -39,16 +39,15 @@ export class PlansController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('jwt')
-  findOne(@Param('id') id: string, @CurrentUser() user: User) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: User) {
     console.log('here');
-    return this.plansService.findOne(id, user._id);
+    return await this.plansService.findOne(id, user._id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('jwt')
-  @Roles(UserRole.USER)
   @Get()
   findByUser(@CurrentUser() currentUser: User) {
     return this.plansService.findAll(currentUser._id)
@@ -59,8 +58,10 @@ export class PlansController {
     return this.plansService.update(id, updatePlanDto);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt')  
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.plansService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.plansService.remove(id, user._id);
   }
 }

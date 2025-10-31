@@ -55,15 +55,21 @@ export class PlansService {
         isOwner = false;
     }
 
-    return { ...plan, isOwner };
-    
+    return { plan, isOwner };
+
   }
 
   update(id: string, updatePlanDto: UpdatePlanDto) {
     return this.planModel.findByIdAndUpdate(id, updatePlanDto).exec();
   }
 
-  remove(id: string) {
+  async remove(id: string, curUserId: ObjectId) {
+    const plan = await this.planModel.findById(id).exec();
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        throw new BadRequestException('You are not authorized to delete this plan.');
+    }
+    
+
     return this.planModel.findByIdAndDelete(id).exec();
   }
 
