@@ -44,8 +44,6 @@ export class PlacesController {
     return place;
   }
 
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
   @Get('all')
   findAllPlaces(@Query('type') t?: FindPlaceQueryDto) {
     if (t){
