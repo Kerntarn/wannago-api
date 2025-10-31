@@ -9,6 +9,9 @@ import { TagsService } from 'src/tags/tags.service';
 import axios from 'axios';
 import { AdService } from 'src/ad/ad.service';
 import { mockPlaces } from './mock-places'; // Import mock data
+import { mockIsanPlaces } from './mock-isan-places';
+import { mockChiangmaiPlaces } from './mock-chiangmai-places';
+import { mockBangkokAdventurePlaces } from './mock-bangkok-adventure-places';
 
 @Injectable()
 export class PlacesService {
@@ -77,6 +80,12 @@ export class PlacesService {
 
   async findByName(name: string): Promise<PlaceDocument[]> {
     if (this.useMockData) {
+      if (name === 'อีสานใต้') {
+        return Promise.resolve(mockIsanPlaces);
+      }
+      if (name === 'เชียงใหม่') {
+        return Promise.resolve(mockChiangmaiPlaces);
+      }
       return Promise.resolve(mockPlaces.filter(place => new RegExp(name, 'i').test(place.name)));
     }
     const places = await this.placeModel.find({ name: new RegExp(name, 'i') }).exec();
@@ -221,6 +230,17 @@ export class PlacesService {
       .sort((a, b) => a.distance - b.distance);
 
     return placesWithDistance.slice(0, limit).map((item) => item.place);
+  }
+
+    async findDefaultPlaces(categories: string[]): Promise<PlaceDocument[]> {
+    if (this.useMockData) {
+      const adventureCategories = ["ธรรมชาติ", "ผจญภัย"];
+      if (categories.some(cat => adventureCategories.includes(cat))) {
+        return Promise.resolve(mockBangkokAdventurePlaces);
+      }
+    }
+    // Fallback to a default list if no matching categories
+    return Promise.resolve(mockPlaces.slice(0, 3));
   }
 
   private parseLatLng(url: string): [ number, number ] | null {
