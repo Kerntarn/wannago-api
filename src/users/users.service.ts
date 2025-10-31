@@ -4,7 +4,6 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from '../schemas/user.schema';
 import { RegisterDto } from 'src/auth/dtos/register.dto';
-import { UpdateUserDto } from '../users/dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -42,6 +41,10 @@ export class UsersService {
         return createdUser.save();
     }
 
+    async findAll(): Promise<User[]> {
+        return this.userModel.find().exec();
+    }
+
     async findByEmail(email: string): Promise<User | null> {
         const user = await this.userModel.findOne({ email }).exec();
         if (!user) return null;
@@ -55,34 +58,34 @@ export class UsersService {
         return this.userModel.findById(id).exec();
     }
 
-    async update(id: string, updateDto: UpdateUserDto): Promise<User> {
-        const existingUser = await this.userModel.findById(id);
-        if (!existingUser) {
-            throw new NotFoundException('User not found');
-        }
+    // async update(id: string, updateDto: UpdateUserDto): Promise<User> {
+    //     const existingUser = await this.userModel.findById(id);
+    //     if (!existingUser) {
+    //         throw new NotFoundException('User not found');
+    //     }
 
-        // Prevent updating email or username to an already existing one
-        if (updateDto.email && updateDto.email !== existingUser.email) {
-            const userWithEmail = await this.userModel.findOne({ email: updateDto.email });
-            if (userWithEmail) {
-                throw new ConflictException('Email already in use');
-            }
-        }
-        if (updateDto.userName && updateDto.userName !== existingUser.userName) {
-            const userWithUsername = await this.userModel.findOne({ userName: updateDto.userName });
-            if (userWithUsername) {
-                throw new ConflictException('Username already in use');
-            }
-        }
+    //     // Prevent updating email or username to an already existing one
+    //     if (updateDto.email && updateDto.email !== existingUser.email) {
+    //         const userWithEmail = await this.userModel.findOne({ email: updateDto.email });
+    //         if (userWithEmail) {
+    //             throw new ConflictException('Email already in use');
+    //         }
+    //     }
+    //     if (updateDto.userName && updateDto.userName !== existingUser.userName) {
+    //         const userWithUsername = await this.userModel.findOne({ userName: updateDto.userName });
+    //         if (userWithUsername) {
+    //             throw new ConflictException('Username already in use');
+    //         }
+    //     }
 
-        // Hash password if it's being updated
-        if (updateDto.password) {
-            updateDto.password = await bcrypt.hash(updateDto.password, 10);
-        }
+    //     // Hash password if it's being updated
+    //     if (updateDto.password) {
+    //         updateDto.password = await bcrypt.hash(updateDto.password, 10);
+    //     }
 
-        const updatedUser = await this.userModel.findByIdAndUpdate(id, updateDto, { new: true }).exec();
-        return updatedUser;
-    }
+    //     const updatedUser = await this.userModel.findByIdAndUpdate(id, updateDto, { new: true }).exec();
+    //     return updatedUser;
+    // }
 
     async remove(id: string): Promise<User> {
         const deletedUser = await this.userModel.findByIdAndDelete(id).exec();

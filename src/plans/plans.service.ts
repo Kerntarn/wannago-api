@@ -47,15 +47,29 @@ export class PlansService {
     return this.planModel.find().exec();
   }
 
-  findOne(id: string) {
-    return this.planModel.findById(id).exec();
+  async findOne(id: string, curUserId: ObjectId) {
+    console.log(id);
+    const plan = await this.planModel.findById(id).exec();
+    let isOwner = true;
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        isOwner = false;
+    }
+
+    return { plan, isOwner };
+
   }
 
   update(id: string, updatePlanDto: UpdatePlanDto) {
     return this.planModel.findByIdAndUpdate(id, updatePlanDto).exec();
   }
 
-  remove(id: string) {
+  async remove(id: string, curUserId: ObjectId) {
+    const plan = await this.planModel.findById(id).exec();
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        throw new BadRequestException('You are not authorized to delete this plan.');
+    }
+    
+
     return this.planModel.findByIdAndDelete(id).exec();
   }
 
@@ -80,17 +94,8 @@ export class PlansService {
     const diffTime = Math.abs(planEntity.endDate.getTime() - planEntity.startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-    // Logic for when no destinations are provided
-    const nearbyPlaces = await this.placesService.findNearbyPlaces(dto.source as [number, number], 3);
-    planEntity.suggestedDestinations = nearbyPlaces.map(place => ({
-      id: place._id.toString(),
-      name: place.name,
-      location: place.location,
-      description: place.description,
-      imageUrl: place.imageUrl,
-    }));
-      // Create an empty itinerary for the duration
-      for (let i = 0; i < diffDays; i++) {
+    // Create an empty itinerary for the duration
+    for (let i = 0; i < diffDays; i++) {
       const currentDate = new Date(planEntity.startDate);
       currentDate.setDate(planEntity.startDate.getDate() + i);
       const dateString = currentDate.toISOString().split('T')[0];
@@ -106,8 +111,55 @@ export class PlansService {
       };
     }
 
+    const addLocationsToItinerary = (places: PlaceDocument[]) => {
+      const days = Object.keys(planEntity.itinerary);
+
+      const attractions = places.filter(p => (p as any).type === 'attraction');
+      const restaurants = places.filter(p => (p as any).type === 'restaurant');
+      const accommodations = places.filter(p => (p as any).type === 'accommodation');
+
+      const availableRestaurants = [...restaurants];
+      const availableAccommodations = [...accommodations];
+
+      const attractionsPerDay = Math.ceil(attractions.length / days.length);
+
+      days.forEach((day, dayIndex) => {
+        const startIndex = dayIndex * attractionsPerDay;
+        const endIndex = startIndex + attractionsPerDay;
+        const dayAttractions = attractions.slice(startIndex, endIndex);
+
+        const dayPlaces = [...dayAttractions];
+        
+        if (availableRestaurants.length > 0) {
+          dayPlaces.push(availableRestaurants.shift());
+        }
+        
+        if (availableAccommodations.length > 0) {
+          dayPlaces.push(availableAccommodations.shift());
+        }
+
+        planEntity.itinerary[day].locations = dayPlaces.map((place, index) => ({
+          id: place._id.toString(),
+          name: place.name,
+          source: place.location as [number, number],
+          order: index + 1,
+          image: place.imageUrl,
+          description: place.description,
+        })) as any;
+      });
+    };
+
+    if (dto.where) {
+      const places = await this.placesService.findByName(dto.where);
+      addLocationsToItinerary(places);
+    } else if (dto.source) {
+      const defaultPlaces = await this.placesService.findDefaultPlaces(dto.category);
+      addLocationsToItinerary(defaultPlaces);
+    }
+
     return planEntity;
   }
 
 
 }
+
