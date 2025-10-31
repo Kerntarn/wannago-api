@@ -47,8 +47,16 @@ export class PlansService {
     return this.planModel.find().exec();
   }
 
-  findOne(id: string) {
-    return this.planModel.findById(id).exec();
+  async findOne(id: string, curUserId: ObjectId) {
+    console.log(id);
+    const plan = await this.planModel.findById(id).exec();
+    let isOwner = true;
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        isOwner = false;
+    }
+
+    return { ...plan, isOwner };
+    
   }
 
   update(id: string, updatePlanDto: UpdatePlanDto) {

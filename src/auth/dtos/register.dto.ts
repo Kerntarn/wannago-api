@@ -47,7 +47,7 @@ export class RegisterDto {
     @IsString()
     guestToken?: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: false })
     @IsBoolean()
     isProvider: boolean;
 }

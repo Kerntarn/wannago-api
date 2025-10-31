@@ -1,6 +1,7 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { ObjectId } from "mongoose";
 
 export class CreatePlanDto {
     @ApiProperty({ example: "อีสานใต้", description: 'Optional destination or region for the plan', required: false })
@@ -49,4 +50,18 @@ export class CreatePlanDto {
     source: number[];
 }
 
-export class UpdatePlanDto extends PartialType(CreatePlanDto) {}
+export class UpdatePlanDto {
+
+    _id: string;
+    budget: number;
+    ownerId: string;
+    title: string;
+    category: string[];
+    transportation: string;
+    people: number;
+    startDate: string;
+    endDate: string;
+    itinerary: Record<string, any>;
+    where: string;
+    startPoint: Record<string, any>;
+}

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Put } from '@nestjs/common';
 import { PlansService } from './plans.service';
 import { CreatePlanDto } from 'src/plans/plan.dto';
 import { UpdatePlanDto } from 'src/plans/plan.dto';
@@ -29,13 +29,6 @@ export class PlansController {
   createTemporary(@Body() createPlanDto: CreatePlanDto, @CurrentGuest() guest: GuestDocument) {
     return this.plansService.createTemporary(createPlanDto, guest.guestId);
   }
-  
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth('jwt')
-  // @Post('save')
-  // save(@Body() savePlanDto: SavePlanDto, @CurrentUser() user: User) {
-  //   return this.plansService.save(savePlanDto, user._id.toString());
-  // }
  
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth('jwt')
@@ -46,8 +39,11 @@ export class PlansController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.plansService.findOne(id);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth('jwt')
+  findOne(@Param('id') id: string, @CurrentUser() user: User) {
+    console.log('here');
+    return this.plansService.findOne(id, user._id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -58,7 +54,7 @@ export class PlansController {
     return this.plansService.findAll(currentUser._id)
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updatePlanDto: UpdatePlanDto) {
     return this.plansService.update(id, updatePlanDto);
   }
