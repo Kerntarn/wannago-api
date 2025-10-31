@@ -38,7 +38,19 @@ export class Plan{
 
     @Prop({ required: false, description: 'The general destination or region for the plan. Can be optional if specific destinations are not yet decided.' })
     where?: string;
+    
 }
 
 export const PlanSchema = SchemaFactory.createForClass(Plan);
 
+PlanSchema.pre<planDocument>('save', async function (next) {
+  if (!this.title) {
+    const model = this.constructor as Model<planDocument>;
+
+    const count = await model.countDocuments({ title: /^untitled-/ });
+    const nextNumber = count + 1;
+
+    this.title = `untitled-${String(nextNumber).padStart(2, '0')}`;
+  }
+  next();
+});
