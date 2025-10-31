@@ -123,6 +123,10 @@ export class PlacesService {
     if (!deleted) {
       throw new NotFoundException(`Place with ID ${id} not found or not owned by user`);
     }
+    
+    this.adService.removeAdsByPlaceId(id);
+    
+    return ;
   }
   
   async getMostRelatedPlace(places: PlaceDocument[], preferredTags: string[]): Promise<PlaceDocument[]> {

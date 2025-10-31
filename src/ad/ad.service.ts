@@ -401,6 +401,9 @@ async getAdGraph(adId: string) {
     return { message: 'Ad deleted successfully' };
   }
 
+  async removeAdsByPlaceId(placeId: string) {
+      await this.adModel.deleteMany({ placeId: placeId });
+  }
 
 
   async incrementViews(placeId: string) {

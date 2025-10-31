@@ -14,7 +14,7 @@ export class TransportMethodService {
   ) {}
 
   async create(dto: CreateTransportMethodDto, user: User): Promise<TransportMethod> {
-    if (user.role === UserRole.USER) {
+    if (user.role === UserRole.PROVIDER) {
       dto.hasBooking = true;
     }
     const created = new this.transportMethodModel({ ...dto, providerId: user._id });
@@ -48,4 +48,11 @@ export class TransportMethodService {
     if (!deleted) throw new NotFoundException(`TransportMethod #${id} not found`);
     return deleted;
   }
+
+  async getTransportMethodsForPlan(transportationType: string): Promise<TransportMethodDocument[]> {
+    let result = await this.transportMethodModel.find({ type: transportationType, hasBooking: true }).exec();
+
+    return result.sort(() => Math.random() - 0.5).slice(0, 2);
+  }
+
 }

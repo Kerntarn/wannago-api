@@ -15,7 +15,7 @@ export class TransportMethod {
       @Prop({})
       contactInfo?: string;
 
-      @Prop({default:false})
+      @Prop({ default: false })
       hasBooking: boolean;
 
       @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false })
