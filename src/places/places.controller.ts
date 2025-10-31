@@ -46,7 +46,7 @@ export class PlacesController {
     return this.placesService.findAll();
   }
 
-  @Get()
+  @Get()    // Get by service provider to see their own places
   @UseGuards(RolesGuard)
   @Roles(UserRole.USER)
   findAllByUser(@CurrentUser() user, @Query('type') t?: FindPlaceQueryDto) {

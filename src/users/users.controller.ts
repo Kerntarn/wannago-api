@@ -14,6 +14,11 @@ import {ApiBearerAuth } from '@nestjs/swagger'
 export class UsersController {
     constructor(private readonly userservice: UsersService) {}
 
+  @Get('all')
+  getAllUsers() {
+    return this.userservice.findAll();
+  }
+
   @Get('')
   @Roles(UserRole.USER)
   getProfile(@CurrentUser() user) {
