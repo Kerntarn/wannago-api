@@ -86,7 +86,7 @@ export class PlacesService {
       if (name === 'เชียงใหม่') {
         return Promise.resolve(mockChiangmaiPlaces);
       }
-      return Promise.resolve(mockPlaces.filter(place => new RegExp(name, 'i').test(place.name)));
+      return Promise.resolve(mockBangkokAdventurePlaces);
     }
     const places = await this.placeModel.find({ name: new RegExp(name, 'i') }).exec();
     console.log(places);
