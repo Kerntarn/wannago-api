@@ -1,0 +1,42 @@
+[
+  {
+    "case": "Minimal Input Plan (source and category only)",
+    "data": {
+      "category": ["ธรรมชาติ", "ผจญภัย"],
+      "source": [100.5018, 13.7563]
+    }
+  },
+  {
+    "case": "Plan with all optional fields",
+    "data": {
+      "where": "เชียงใหม่",
+      "category": ["วัฒนธรรม", "อาหาร"],
+      "budget": 3000,
+      "transportation": "เครื่องบิน",
+      "people": 3,
+      "startDate": "2025-11-15",
+      "endDate": "2025-11-18",
+      "source": [100.5018, 13.7563]
+    }
+  },
+  {
+    "case": "User-provided payload example",
+    "data": {
+      "where": "อีสานใต้",
+      "category": [
+        "ปีนผา",
+        "ทะเล",
+        "ธรรมชาติ"
+      ],
+      "budget": 500,
+      "transportation": "รถยนต์ส่วนตัว",
+      "people": 2,
+      "startDate": "2025-09-28",
+      "endDate": "2025-09-30",
+      "source": [
+        100.5018,
+        13.7563
+      ]
+    }
+  }
+]

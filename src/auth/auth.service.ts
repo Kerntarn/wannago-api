@@ -25,6 +25,9 @@ export class AuthService {
 
     async register(registerDto: RegisterDto) {
         const { planId, guestToken, ...rest } = registerDto;
+        if (rest.profileImage === '') {
+            rest.profileImage = "https://www.slashfilm.com/img/gallery/demon-slayer-season-2-tanjiro-declines-a-friend-request-as-things-come-to-a-head/intro-1644195796.jpg";
+        }
         const user = await this.usersService.create(rest);
 
         if (planId) {

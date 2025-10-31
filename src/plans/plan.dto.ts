@@ -1,49 +1,52 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { Type } from "class-transformer";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class CreatePlanDto {
-    @ApiProperty({ example: [100.5018, 13.7563], description: 'Give me longitude and latitude of source', type: [Number]})
+    @ApiProperty({ example: "อีสานใต้", description: 'Optional destination or region for the plan', required: false })
+    @IsOptional()
+    @IsString()
+    where?: string;
+
+    @ApiProperty({ example: ["ปีนผา", "ทะเล", "ธรรมชาติ"] })
     @IsNotEmpty()
     @IsArray()
-    @IsNumber({}, { each: true })
-    @ArrayMinSize(2, { message: 'Give me longitude and latitude of source'})
-    @ArrayMaxSize(2, { message: 'Give me longitude and latitude of source'})
-    source: number[];
+    @IsString({ each: true })
+    @ArrayMinSize(1)
+    category: string[];
 
-    @ApiProperty( {example: 'พัทยา'})
-    @IsOptional()
-    destination?: string;
-
-    @ApiProperty({format: 'date-time', example: new Date(),})
-    @IsOptional()
-    @IsDateString()
-    startTime?: Date;
-    
-    @ApiProperty({format: 'date-time', example: new Date(),})
-    @IsOptional()
-    @IsDateString()
-    endTime?: Date;
-    
-    @ApiProperty()
+    @ApiProperty({ example: 500, required: false })
     @IsOptional()
     @Min(0)
     budget?: number;
-    
-    @ApiProperty({example: 1})
+
+    @ApiProperty({ example: "รถยนต์ส่วนตัว", required: false })
+    @IsOptional()
+    @IsString()
+    transportation?: string;
+
+    @ApiProperty({ example: 2, required: false })
     @IsOptional()
     @Min(1)
-    groupSize?: number;
+    people?: number;
 
-    @ApiProperty({example: ['Personal Car', 'Taxi']})
+    @ApiProperty({ example: "2025-09-28", required: false })
     @IsOptional()
-    @IsString( {each: true} ) 
-    transit: string[];
+    @IsDateString()
+    startDate?: string;
 
-    @ApiProperty({example: ["solo-travel"]})
-    @IsNotEmpty()
-    @IsString({each: true})
-    @ArrayMinSize(1)
-    preferredTags: string[];
+    @ApiProperty({ example: "2025-09-30", required: false })
+    @IsOptional()
+    @IsDateString()
+    endDate?: string;
+
+    @ApiProperty({ example: [100.5018, 13.7563], description: 'Give me longitude and latitude of source', type: [Number] , required: false })
+    @IsOptional()
+    @IsArray()
+    @IsNumber({}, { each: true })
+    @ArrayMinSize(2, { message: 'Give me longitude and latitude of source' })
+    @ArrayMaxSize(2, { message: 'Give me longitude and latitude of source' })
+    source: number[];
 }
 
 export class UpdatePlanDto extends PartialType(CreatePlanDto) {}

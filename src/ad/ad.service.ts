@@ -5,7 +5,6 @@ import { Ad, AdDocument } from '../schemas/ad.schema';
 import { Transaction, TransactionDocument } from '../schemas/transaction.schema';
 import { Place, PlaceDocument } from '../schemas/place.schema';
 import { CreateAdDto } from './dtos/create-ad.dto';
-import { PlacesService } from 'src/places/places.service';
 import { UsersService } from 'src/users/users.service';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { TransactionStatus } from 'src/transaction/transaction.asset';
@@ -19,10 +18,9 @@ export class AdService {
 
   constructor(
     private readonly userService: UsersService,
-    private readonly placesService: PlacesService,
     private readonly transactionService: TransactionService,
     @InjectModel(Ad.name) private adModel: Model<AdDocument>,
-    @InjectModel(Place.name) private placeModel: Model<Place>,
+    @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
   ) {}
 
   //สร้าง
@@ -155,7 +153,17 @@ export class AdService {
     const providerObjectId = new Types.ObjectId(providerId);
     const ads = await this.adModel.find({ providerId: providerObjectId }).sort({ createdAt: -1 });
 
-    if (!ads || ads.length === 0) throw new NotFoundException('No ads found for this user');
+    if (!ads || ads.length === 0) {
+      return {
+        total: {
+          views: 0,
+          clicks: 0,
+          contacts: 0,
+          bookings: 0,
+          ctr: 0,
+        }
+      };
+    }
 
     const totalViews = ads.reduce((sum, ad) => sum + ad.views, 0);
     const totalClicks = ads.reduce((sum, ad) => sum + ad.clicks, 0);
@@ -169,30 +177,38 @@ export class AdService {
         clicks: totalClicks,
         contacts: totalContacts,
         bookings: totalBookings,
-        ctr,
+        ctr: ctr,
       }
     };
   }
 
   async getAllAdsGraph(ownerId: string) {
-    const ads = await this.adModel.find({ providerId: new Types.ObjectId(ownerId) }).sort({ createdAt: 1 });
-    if (!ads.length) throw new NotFoundException('No ads found for this user');
+    const ads = await this.adModel
+      .find({ providerId: new Types.ObjectId(ownerId) })
+      .sort({ createdAt: 1 });
 
-    const firstDate = new Date(Math.min(...ads.map(a => a.createdAt.getTime())));
-    const endDate = new Date();
-    
     const stats: Record<string, any> = {};
+    const endDate = new Date();
 
-    // สร้าง key สำหรับแต่ละวัน
+    let firstDate: Date;
+
+    if (!ads.length) {
+      // ไม่มีโฆษณา
+      firstDate = new Date();
+      firstDate.setDate(endDate.getDate() - 29);
+    } else {
+      firstDate = new Date(Math.min(...ads.map(a => a.createdAt.getTime())));
+    }
+
     let current = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
     while (current <= endDate) {
-      const dayKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2,'0')}-${String(current.getDate()).padStart(2,'0')}`;
+      const dayKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
       stats[dayKey] = { date: dayKey, click: 0, view: 0, contract: 0, booking: 0, ctr: 0 };
-      current.setDate(current.getDate() + 1); // ขยับวันทีละ 1
+      current.setDate(current.getDate() + 1);
     }
 
     ads.forEach(ad => {
-      const dayKey = `${ad.createdAt.getFullYear()}-${String(ad.createdAt.getMonth() + 1).padStart(2,'0')}-${String(ad.createdAt.getDate()).padStart(2,'0')}`;
+      const dayKey = `${ad.createdAt.getFullYear()}-${String(ad.createdAt.getMonth() + 1).padStart(2, '0')}-${String(ad.createdAt.getDate()).padStart(2, '0')}`;
       if (!stats[dayKey]) return;
       stats[dayKey].click += ad.clicks;
       stats[dayKey].view += ad.views;
@@ -204,7 +220,7 @@ export class AdService {
       stat.ctr = stat.view > 0 ? parseFloat(((stat.click / stat.view) * 100).toFixed(2)) : 0;
     });
 
-    return Object.values(stats).sort((a,b) => a.date > b.date ? 1 : -1);
+    return Object.values(stats).sort((a, b) => a.date > b.date ? 1 : -1);
   }
 
 
@@ -272,6 +288,10 @@ export class AdService {
       .sort({ createdAt: -1 })
       .populate<{ placeId: PlaceDocument }>('placeId', 'name'); 
 
+    if (!ads.length) {
+      return [];
+    }
+
     return ads.map(ad => ({
       id: ad._id,
       providerId: ad.providerId,
@@ -306,59 +326,38 @@ export class AdService {
   }
 
 
-  async incrementViews(adId: string) {
-    const ad = await this.adModel.findById(adId);
-    if (!ad) throw new NotFoundException('Ad not found');
+  async incrementViews(placeId: string) {
+    const ad = await this.adModel.findOne({ placeId: placeId });
+    if (!ad){
+      console.log('Ad not found for placeId:', placeId);
+      return false;
+    }
 
     const ctr = ad.views > 0 ? parseFloat((( ad.clicks / ( ad.views + 1 )) * 100).toFixed(2)) : 0
-    const updateAd = await this.adModel.findByIdAndUpdate(adId,{ $inc: { views : 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-
-    const formatted = {
-        _id: updateAd._id,
-        providerId: updateAd.providerId,
-        placeName: updateAd.placeId.name, 
-        views: updateAd.views,
-        ctr: updateAd.ctr
-      };
-    return formatted;
+    const updateAd = await this.adModel.findByIdAndUpdate(ad._id,{ $inc: { views : 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    return true;
   }
 
-  async incrementClicks(adId: string) {
-    const ad = await this.adModel.findById(adId);
-    if (!ad) throw new NotFoundException('Ad not found');
+  async incrementClicks(placeId: string) {
+    const ad = await this.adModel.findOne({ placeId: placeId });
+    if (!ad){
+      console.log('Ad not found for placeId:', placeId);
+      return false;
+    }
 
     const ctr = ad.views > 0 ? parseFloat((((ad.clicks + 1) / ad.views) * 100).toFixed(2)) : 0
-    const updateAd = await this.adModel.findByIdAndUpdate(adId,{ $inc: { clicks: 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-    const formatted = {
-        _id: updateAd._id,
-        providerId: updateAd.providerId,
-        placeName: updateAd.placeId.name, 
-        clicks: updateAd.clicks,
-        ctr: updateAd.ctr
-      };
-    return formatted;
+    const updateAd = await this.adModel.findByIdAndUpdate(ad._id,{ $inc: { clicks: 1 }, $set: { ctr }},{ new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    return true;
   }
 
-  async incrementContacts(adId: string) {
-    const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { contacts: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-    const formatted = {
-        _id: ad._id,
-        providerId: ad.providerId,
-        placeName: ad.placeId.name, 
-        contacts: ad.contacts
-      };
-    return formatted;
+  async incrementContacts(placeId: string) {
+    const ad = await this.adModel.findOneAndUpdate({ placeId: placeId }, { $inc: { contacts: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    return true;
   }
 
-  async incrementBookings(adId: string) {
-   const ad = await this.adModel.findByIdAndUpdate(adId,{ $inc: { bookings: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
-    const formatted = {
-        _id: ad._id,
-        providerId: ad.providerId,
-        placeName: ad.placeId.name, 
-        bookings: ad.bookings
-      };
-      return formatted;
+  async incrementBookings(placeId: string) {
+   const ad = await this.adModel.findOneAndUpdate({ placeId: placeId }, { $inc: { bookings: 1 } }, { new: true }).populate<{ placeId: PlaceDocument }>('placeId', 'name');
+    return true;
   }
 
   @Cron(CronExpression.EVERY_10_SECONDS)

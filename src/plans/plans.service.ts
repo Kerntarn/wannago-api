@@ -1,14 +1,14 @@
-import { BadRequestException, Injectable, UseGuards } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { CreatePlanDto } from 'src/plans/plan.dto';
-import { UpdatePlanDto } from 'src/plans/plan.dto';
+import { CreatePlanDto, UpdatePlanDto } from 'src/plans/plan.dto';
+import { Model, ObjectId } from 'mongoose';
 import { Plan, planDocument } from 'src/schemas/plan.schema';
 import { GuestService } from 'src/guest/guest.service';
 import { PlacesService } from 'src/places/places.service';
 import { TagsService } from 'src/tags/tags.service';
-import { Place } from 'src/schemas/place.schema';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PlaceDocument } from 'src/schemas/place.schema';
+import { TransportMethodService } from 'src/transport/transportMethod.service';
+import { ItineraryDay, LocationInItinerary } from 'src/schemas/itinerary.schema';
 
 @Injectable()
 export class PlansService {
@@ -17,29 +17,33 @@ export class PlansService {
     private readonly guestService: GuestService,
     private readonly placesService: PlacesService,
     private readonly tagsService: TagsService,
+    private readonly transportMethodService: TransportMethodService, // Inject TransportMethodService
   ) {}
 
   async create(createPlanDto: CreatePlanDto, userId: string) {
-    const newPlan = await this._toEntity(createPlanDto);
-    const createdPlan = new this.planModel(newPlan);
-    createdPlan.save();
+    const newPlan = await this.generatePlan(createPlanDto);
+    const createdPlan = new this.planModel({ ...newPlan, ownerId: userId });
+    await createdPlan.save();
     return createdPlan;
   }
 
   async createTemporary(createPlanDto: CreatePlanDto, guestId: string) {
-    const newPlan = await this._toEntity(createPlanDto);
-    //Add route
+    const newPlan = await this.generatePlan(createPlanDto);
     const createdPlan = new this.planModel(newPlan);
     this.guestService.addPlanToGuest(guestId, createdPlan._id);
     await createdPlan.save();
-    return this._toResponse(createdPlan);
+    return createdPlan;
   }
 
   async assignPlanToUser(planId: string, userId: string): Promise<Plan> {
     return this.planModel.findByIdAndUpdate(planId, { ownerId: userId }).exec();
   }
 
-  findAll() {
+  findAll(userId?: ObjectId) {
+    if (userId) {
+      return this.planModel.find({ ownerId: userId }).exec();
+    }
+
     return this.planModel.find().exec();
   }
 
@@ -56,62 +60,92 @@ export class PlansService {
   }
 
 
-  async _toEntity(dto: CreatePlanDto): Promise<Plan> {
-    const allTags = await this.tagsService.findAll();
-    if (!dto.preferredTags.every(tag => allTags.includes(tag))) {
-      throw new BadRequestException('Some tags are not recognized');
-    }
+  async generatePlan(dto: CreatePlanDto): Promise<Partial<Plan>> {
+    const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
+    const endDate = dto.endDate ? new Date(dto.endDate) : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); // Default to 3 days trip
 
-    let places = await this.placesService.findByName(dto.destination);
-    if (places.length == 0) {
-      places = await this.placesService.findAll();
-    }
-
-    const dst = await this.placesService.getMostRelatedPlace(places, dto.preferredTags);
-    if (!dst) {
-      throw new BadRequestException('Unable to identify destination place');
-    }
-    // // now dto has some field of data but we will have to do somethings to make it a complete plan then insert
-    // // do what??????
-
-    // // let us check first what tags user provided
-
-    // if (!createPlanDto.budget){
-    //   // check previous plan to get average budget???
-    //   // default set to some value like 1000??
-    //   // or make it lowest for the cheapest plan or make it infinite for the most expensive plan???
-    //   // or just sum all place price after got complete plan (Procrastinate)
-    //   createPlanDto.budget = 0;
-    // } 
-    // if (!createPlanDto.startTime){
-    //   // pick the best datetime for user
-    //   // or will we receive as period when user can go and then we pick date from that???
-    //   createPlanDto.startTime = new Date();
-    // }
-    // if (!createPlanDto.endTime){
-    //   createPlanDto.endTime = new Date();
-    // }
-    // let dst = [0, 0];
-    // if (!createPlanDto.destination){
-    //   // some logic to pick the best match place?
-    //   dst = [0, 0];
-    // }
-    return {
-      source: dto.source,
-      destination: dst.location,
-      startTime: dto.startTime,
-      endTime: dto.endTime,
-      preferredTags: dto.preferredTags,
+    const planEntity: Partial<Plan> = {
+      title: `ทริป ${dto.where || 'ไร้ชื่อ'}`,
+      where: dto.where,
+      category: dto.category,
       budget: dto.budget,
-      groupSize: dto.groupSize,
-      ownerId: null,
+      transportation: dto.transportation,
+      people: dto.people,
+      startDate: startDate,
+      endDate: endDate,
+      source: dto.source,
+      itinerary: {},
     };
-  }
 
-  async _toResponse(plan: Plan): Promise<any> {
-    
-    return plan;
+    const diffTime = Math.abs(planEntity.endDate.getTime() - planEntity.startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+    // Create an empty itinerary for the duration
+    for (let i = 0; i < diffDays; i++) {
+      const currentDate = new Date(planEntity.startDate);
+      currentDate.setDate(planEntity.startDate.getDate() + i);
+      const dateString = currentDate.toISOString().split('T')[0];
+      const dayName = currentDate.toLocaleString('th-TH', { weekday: 'long' });
+      const date = currentDate.toLocaleString('th-TH', { day: 'numeric', month: 'long' });
+
+      planEntity.itinerary[dateString] = {
+        dayName: dayName,
+        date: date,
+        description: "",
+        locations: [] as any,
+        travelTimes: [],
+      };
+    }
+
+    const addLocationsToItinerary = (places: PlaceDocument[]) => {
+      const days = Object.keys(planEntity.itinerary);
+
+      const attractions = places.filter(p => (p as any).type === 'attraction');
+      const restaurants = places.filter(p => (p as any).type === 'restaurant');
+      const accommodations = places.filter(p => (p as any).type === 'accommodation');
+
+      const availableRestaurants = [...restaurants];
+      const availableAccommodations = [...accommodations];
+
+      const attractionsPerDay = Math.ceil(attractions.length / days.length);
+
+      days.forEach((day, dayIndex) => {
+        const startIndex = dayIndex * attractionsPerDay;
+        const endIndex = startIndex + attractionsPerDay;
+        const dayAttractions = attractions.slice(startIndex, endIndex);
+
+        const dayPlaces = [...dayAttractions];
+        
+        if (availableRestaurants.length > 0) {
+          dayPlaces.push(availableRestaurants.shift());
+        }
+        
+        if (availableAccommodations.length > 0) {
+          dayPlaces.push(availableAccommodations.shift());
+        }
+
+        planEntity.itinerary[day].locations = dayPlaces.map((place, index) => ({
+          id: place._id.toString(),
+          name: place.name,
+          source: place.location as [number, number],
+          order: index + 1,
+          image: place.imageUrl,
+          description: place.description,
+        })) as any;
+      });
+    };
+
+    if (dto.where) {
+      const places = await this.placesService.findByName(dto.where);
+      addLocationsToItinerary(places);
+    } else if (dto.source) {
+      const defaultPlaces = await this.placesService.findDefaultPlaces(dto.category);
+      addLocationsToItinerary(defaultPlaces);
+    }
+
+    return planEntity;
   }
 
 
 }
+

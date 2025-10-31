@@ -18,11 +18,8 @@ export class TransportMethod {
       @Prop({default:false})
       hasBooking: boolean;
 
-      @Prop()//required ObjectId in the future
-      providerId?: string;
-
-      // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Provider', required: true })
-      // providerId: mongoose.Types.ObjectId;
+      @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false })
+      providerId?: mongoose.Types.ObjectId;
 }
 
 export const TransportMethodSchema = SchemaFactory.createForClass(TransportMethod);
