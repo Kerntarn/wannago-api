@@ -1,6 +1,7 @@
-import mongoose, { HydratedDocument, Model } from "mongoose";
+import mongoose, { HydratedDocument, Model, ObjectId } from "mongoose";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { ItineraryDay, ItineraryDaySchema, LocationInItinerary } from "src/schemas/itinerary.schema";
+import { TransportMethod } from "./transportMethod.schema";
 
 export type planDocument = HydratedDocument<Plan>;
 
@@ -23,6 +24,9 @@ export class Plan{
 
     @Prop({ required: false, default: 'รถยนต์ส่วนตัว' })
     transportation: string;
+
+    @Prop({ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'TransportMethod' })
+    providedCar?: ObjectId;
 
     @Prop({ required: false, default: 1 })
     people: number; 

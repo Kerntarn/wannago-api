@@ -15,6 +15,7 @@ import {
 import { ObjectId } from 'mongoose';
 import { Place } from 'src/schemas/place.schema';
 import { ItineraryDay, LocationInItinerary } from 'src/schemas/itinerary.schema';
+import { TransportMethod } from 'src/schemas/transportMethod.schema';
 
 export class CreatePlanDto {
   @ApiProperty({
@@ -59,7 +60,7 @@ export class CreatePlanDto {
   endDate?: string;
 
   @ApiProperty({
-    example: 'https://maps.app.goo.gl/your-location OR [100.5018, 13.7563]',
+    example: '[100.5018, 13.7563]',
     description:
       'URL of the source location (e.g., from Google Maps) or an array of [longitude, latitude]',
     required: false,
@@ -102,6 +103,10 @@ export class UpdatePlanDto {
     @ApiProperty()
     @IsNotEmpty()
     transportation: string;
+
+    @ApiProperty()
+    @IsOptional()
+    providedCar?: string;
     
     @ApiProperty()
     @IsNotEmpty()
@@ -130,6 +135,32 @@ export class UpdatePlanDto {
     source: number[];
 }
 
+export class ClonedPlanDto {
+    @ApiProperty()
+    @IsNotEmpty()
+    originalPlanId: string;
+
+    @ApiProperty({ example: [100.5018, 13.7563] })
+    @IsOptional()
+    @IsArray()
+    @IsNumber({}, { each: true })
+    source: number[];
+}
+
+
+class PlaceWithTime extends PartialType(Place) {
+    @ApiProperty({ example: "10:00", description: "Start time for the location in HH:mm format" })
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date)
+    startTime?: Date;
+
+    @ApiProperty({ example: "12:00", description: "End time for the location in HH:mm format" })
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date)
+    endTime?: Date;
+}
 
 class Itinerary {
     description: string;
