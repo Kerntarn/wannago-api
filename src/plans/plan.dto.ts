@@ -14,6 +14,7 @@ import {
 } from 'class-validator';
 import { ObjectId } from 'mongoose';
 import { Place } from 'src/schemas/place.schema';
+import { ItineraryDay, LocationInItinerary } from 'src/schemas/itinerary.schema';
 
 export class CreatePlanDto {
   @ApiProperty({
@@ -116,7 +117,7 @@ export class UpdatePlanDto {
     
     @ApiProperty()
     @IsNotEmpty()
-    itinerary: Record<string, Itinerary>;
+    itinerary: Record<string, ItineraryDay>;
     
     @ApiProperty()
     @IsNotEmpty()
@@ -130,21 +131,7 @@ export class UpdatePlanDto {
 }
 
 
-class PlaceWithTime extends PartialType(Place) {
-    @ApiProperty({ example: "10:00", description: "Start time for the location in HH:mm format" })
-    @IsOptional()
-    @IsDate()
-    @Type(() => Date)
-    startTime?: Date;
-
-    @ApiProperty({ example: "12:00", description: "End time for the location in HH:mm format" })
-    @IsOptional()
-    @IsDate()
-    @Type(() => Date)
-    endTime?: Date;
-}
-
 class Itinerary {
     description: string;
-    locations: PlaceWithTime[];
+    locations: LocationInItinerary[];
 }
