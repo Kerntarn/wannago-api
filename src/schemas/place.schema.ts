@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, ObjectId } from 'mongoose';
+import { Plan } from './plan.schema';
 //what pattern will the data be saved in db
 export type PlaceDocument = HydratedDocument<Place>;
 @Schema({

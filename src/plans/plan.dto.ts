@@ -13,6 +13,7 @@ import {
   Min,
 } from 'class-validator';
 import { ObjectId } from 'mongoose';
+import { Place } from 'src/schemas/place.schema';
 
 export class CreatePlanDto {
   @ApiProperty({
@@ -71,16 +72,65 @@ export class CreatePlanDto {
 }
 
 export class UpdatePlanDto {
-  _id: string;
-  budget: number;
-  ownerId: string;
-  title: string;
-  category: string[];
-  transportation: string;
-  people: number;
-  startDate: string;
-  endDate: string;
-  itinerary: Record<string, any>;
-  where: string;
-  startPoint: Record<string, any>;
+
+    @ApiProperty({ example: "69049873acdf59f8f5f4469d" })
+    @IsNotEmpty()
+    _id: string;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    budget: number;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    ownerId: string;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    title: string;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    category: string[];
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    transportation: string;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    people: number;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    startDate: string;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    endDate: string;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    itinerary: Record<string, Itinerary>;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    where: string;
+
+    @ApiProperty({ example: [100.5018, 13.7563] })
+    @IsNotEmpty()
+    @IsArray()
+    @IsNumber({}, { each: true })
+    source: number[];
+}
+
+
+class PlaceWithTime extends PartialType(Place) {
+    startTime: Date;
+    endTime: Date;
+}
+
+class Itinerary {
+    description: string;
+    locations: PlaceWithTime[];
 }

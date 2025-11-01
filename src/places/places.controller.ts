@@ -42,6 +42,8 @@ import { UserRole } from '../schemas/user.schema';
 export class PlacesController {
   constructor(private readonly placesService: PlacesService) {}
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Post('accommodation')
   createAcc(
     @Body() createAccommodatinDto: CreateAccommodationDto,
@@ -54,7 +56,9 @@ export class PlacesController {
     );
     return place;
   }
-
+  
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Post('attraction')
   createAtt(
     @Body() createAttractionDto: CreateAttractionDto,
@@ -68,6 +72,8 @@ export class PlacesController {
     return place;
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Post('restaurant')
   createRes(
     @Body() createRestaurantDto: CreateRestaurantDto,
@@ -83,8 +89,9 @@ export class PlacesController {
 
   @Get('all')
   findAllPlaces(@Query('type') t?: FindPlaceQueryDto) {
-    if (t) {
-      return this.placesService.findAll(t?.type);
+    console.log("type", typeof(t))
+    if (typeof(t) == "string"){
+      return this.placesService.findAll(String(t));
     }
     return this.placesService.findAll();
   }
@@ -93,7 +100,11 @@ export class PlacesController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.PROVIDER)
   findAllByUser(@CurrentUser() user, @Query('type') t?: FindPlaceQueryDto) {
-    return this.placesService.findAll(t?.type, user._id);
+    console.log("type", typeof(t))
+    if (typeof(t) == "string") {
+      return this.placesService.findAll(String(t), user._id);
+    }
+    return this.placesService.findAll(undefined, user._id);
   }
 
   @Get(':id')
@@ -101,6 +112,8 @@ export class PlacesController {
     return this.placesService.findOne(id);
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Patch('accommodation/:id')
   updateAcc(
     @Param('id') id: string,
@@ -115,6 +128,8 @@ export class PlacesController {
     );
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Patch('attraction/:id')
   updateAtt(
     @Param('id') id: string,
@@ -130,6 +145,8 @@ export class PlacesController {
     );
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Patch('restaurant/:id')
   updateRes(
     @Param('id') id: string,
@@ -144,8 +161,10 @@ export class PlacesController {
     );
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PROVIDER)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    this.placesService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user) {
+    this.placesService.remove(id, user._id);
   }
 }

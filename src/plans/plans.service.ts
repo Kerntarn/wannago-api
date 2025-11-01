@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreatePlanDto, UpdatePlanDto } from 'src/plans/plan.dto';
 import { Model, ObjectId } from 'mongoose';
@@ -8,9 +8,8 @@ import { PlacesService } from 'src/places/places.service';
 import { TagsService } from 'src/tags/tags.service';
 import { PlaceDocument } from 'src/schemas/place.schema';
 import { TransportMethodService } from 'src/transport/transportMethod.service';
-import {
-  LocationInItinerary,
-} from 'src/schemas/itinerary.schema';
+import { ItineraryDay, LocationInItinerary } from 'src/schemas/itinerary.schema';
+import { TransportMethod } from 'src/schemas/transportMethod.schema';
 
 @Injectable()
 export class PlansService {
@@ -18,13 +17,20 @@ export class PlansService {
     @InjectModel(Plan.name) private planModel: Model<planDocument>,
     private readonly guestService: GuestService,
     private readonly placesService: PlacesService,
+    private readonly tagsService: TagsService,
+    private readonly transportMethodService: TransportMethodService,
   ) {}
 
   async create(createPlanDto: CreatePlanDto, userId: string) {
     const newPlan = await this.generatePlan(createPlanDto);
     const createdPlan = new this.planModel({ ...newPlan, ownerId: userId });
+    let transportMethods: TransportMethod[] = [];
+    if (createdPlan.transportation !== "รถยนต์ส่วนตัว"){
+      transportMethods = await this.transportMethodService.getTransportMethodsForPlan();
+    }
+
     await createdPlan.save();
-    return createdPlan;
+    return { createdPlan, transportMethods };
   }
 
   async createTemporary(createPlanDto: CreatePlanDto, guestId: string) {
@@ -59,16 +65,20 @@ export class PlansService {
 
   }
 
-  update(id: string, updatePlanDto: UpdatePlanDto) {
-    return this.planModel.findByIdAndUpdate(id, updatePlanDto).exec();
+  async update(updatePlanDto: UpdatePlanDto, curUserId: ObjectId) {
+    const plan = await this.planModel.findById(updatePlanDto._id).exec();
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        throw new ForbiddenException('You are not authorized to update this plan.');
+    }
+    return this.planModel.findByIdAndUpdate(updatePlanDto._id, updatePlanDto, { new: true }).exec();
   }
 
   async remove(id: string, curUserId: ObjectId) {
     const plan = await this.planModel.findById(id).exec();
     if (plan.ownerId.toString() !== curUserId.toString()) {
-        throw new BadRequestException('You are not authorized to delete this plan.');
+        throw new ForbiddenException('You are not authorized to delete this plan.');
     }
-    
+
 
     return this.planModel.findByIdAndDelete(id).exec();
   }

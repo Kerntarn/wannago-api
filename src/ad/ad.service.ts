@@ -182,46 +182,69 @@ export class AdService {
     };
   }
 
-  async getAllAdsGraph(ownerId: string) {
-    const ads = await this.adModel
-      .find({ providerId: new Types.ObjectId(ownerId) })
-      .sort({ createdAt: 1 });
+async getAllAdsGraph(ownerId: string) {
 
-    const stats: Record<string, any> = {};
-    const endDate = new Date();
+  const ads = await this.adModel
+    .find({ providerId: new Types.ObjectId(ownerId) })
+    .sort({ createdAt: 1 });
 
-    let firstDate: Date;
+  const stats: Record<string, any> = {};
+  const endDate = new Date();
 
-    if (!ads.length) {
-      // ไม่มีโฆษณา
-      firstDate = new Date();
-      firstDate.setDate(endDate.getDate() - 29);
-    } else {
-      firstDate = new Date(Math.min(...ads.map(a => a.createdAt.getTime())));
-    }
 
-    let current = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
-    while (current <= endDate) {
-      const dayKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
-      stats[dayKey] = { date: dayKey, click: 0, view: 0, contract: 0, booking: 0, ctr: 0 };
-      current.setDate(current.getDate() + 1);
-    }
+  const firstDate = new Date();
+  firstDate.setDate(endDate.getDate() - 15);
 
-    ads.forEach(ad => {
-      const dayKey = `${ad.createdAt.getFullYear()}-${String(ad.createdAt.getMonth() + 1).padStart(2, '0')}-${String(ad.createdAt.getDate()).padStart(2, '0')}`;
-      if (!stats[dayKey]) return;
-      stats[dayKey].click += ad.clicks;
-      stats[dayKey].view += ad.views;
-      stats[dayKey].contract += ad.contacts;
-      stats[dayKey].booking += ad.bookings;
-    });
 
-    Object.values(stats).forEach(stat => {
-      stat.ctr = stat.view > 0 ? parseFloat(((stat.click / stat.view) * 100).toFixed(2)) : 0;
-    });
-
-    return Object.values(stats).sort((a, b) => a.date > b.date ? 1 : -1);
+  let current = new Date(firstDate);
+  while (current <= endDate) {
+    const dayKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+    stats[dayKey] = { date: dayKey, click: 0, view: 0, contract: 0, booking: 0, ctr: 0 };
+    current.setDate(current.getDate() + 1);
   }
+
+
+  for (const ad of ads) {
+    // ถ้ามี dailyStats → รวมข้อมูลรายวัน
+    if (Array.isArray(ad.dailyStats)) {
+      console.log(`🧾 โฆษณา ${ad._id} มี dailyStats ${ad.dailyStats.length} รายการ`);
+      ad.dailyStats.forEach(ds => {
+        if (!ds.date) return;
+
+        const dsDate = new Date(ds.date);
+        const dayKey = `${dsDate.getFullYear()}-${String(dsDate.getMonth() + 1).padStart(2, '0')}-${String(dsDate.getDate()).padStart(2, '0')}`;
+
+        if (dsDate >= firstDate && dsDate <= endDate) {
+          if (!stats[dayKey]) {
+            stats[dayKey] = { date: dayKey, click: 0, view: 0, contract: 0, booking: 0, ctr: 0 };
+          }
+
+          stats[dayKey].click += ds.clicks ?? 0;
+          stats[dayKey].view += ds.views ?? 0;
+          stats[dayKey].contract += ds.contacts ?? 0;
+          stats[dayKey].booking += ds.bookings ?? 0;
+        }
+      });
+    } else {
+      // ถ้าไม่มี dailyStats ใช้ข้อมูลรวมจาก ad.createdAt
+      const adDate = new Date(ad.createdAt);
+      const dayKey = `${adDate.getFullYear()}-${String(adDate.getMonth() + 1).padStart(2, '0')}-${String(adDate.getDate()).padStart(2, '0')}`;
+      if (!stats[dayKey]) return;
+      stats[dayKey].click += ad.clicks ?? 0;
+      stats[dayKey].view += ad.views ?? 0;
+      stats[dayKey].contract += ad.contacts ?? 0;
+      stats[dayKey].booking += ad.bookings ?? 0;
+    }
+  }
+
+  Object.values(stats).forEach(stat => {
+    stat.ctr = stat.view > 0 ? parseFloat(((stat.click / stat.view) * 100).toFixed(2)) : 0;
+  });
+
+  const result = Object.values(stats).sort((a, b) => a.date.localeCompare(b.date));
+
+  return result;
+}
 
 
   async getAdStats(adId: string) {
@@ -246,44 +269,65 @@ export class AdService {
     };
   }
 
-  async getAdGraph(adId: string) {
-    const adObjectId = new Types.ObjectId(adId);
-    const ad = await this.adModel.findById(adObjectId);
-    if (!ad) throw new NotFoundException('Ad not found');
+async getAdGraph(adId: string) {
+  const adObjectId = new Types.ObjectId(adId);
+  const ad = await this.adModel.findById(adObjectId);
+  if (!ad) throw new NotFoundException('Ad not found');
 
-    const firstDate = new Date(ad.createdAt);
-    const endDate = new Date();
+  const endDate = new Date();
+  const firstDate = new Date();
+  firstDate.setDate(endDate.getDate() - 14); // รวมวันนี้ = 15 วันย้อนหลัง
 
-    const stats: Record<string, any> = {};
+  const stats: Record<string, any> = {};
 
-    // สร้าง key ของทุกวันตั้งแต่ createdAt ถึงวันนี้
-    let current = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
-    while (current <= endDate) {
-      const dayKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
-      stats[dayKey] = { date: dayKey, click: 0, view: 0, contract: 0, booking: 0, ctr: 0 };
-      current.setDate(current.getDate() + 1);
-    }
+  // ✅ สร้าง key สำหรับทุกวันในช่วง 15 วัน
+  let current = new Date(firstDate);
+  while (current <= endDate) {
+    const dayKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+    stats[dayKey] = { date: dayKey, click: 0, view: 0, contract: 0, booking: 0, ctr: 0 };
+    current.setDate(current.getDate() + 1);
+  }
 
-    // ✅ ใช้ dailyStats แทน total stats
-    if (Array.isArray(ad.dailyStats)) {
-      ad.dailyStats.forEach(ds => {
-        const dayKey = `${ds.date.getFullYear()}-${String(ds.date.getMonth() + 1).padStart(2,'0')}-${String(ds.date.getDate()).padStart(2,'0')}`;
+  // ✅ รวมข้อมูลจาก dailyStats
+  if (Array.isArray(ad.dailyStats)) {
+    console.log("🧾 dailyStats ทั้งหมด:", ad.dailyStats.map(ds => ds.date));
+
+    ad.dailyStats.forEach(ds => {
+      if (!ds.date) return;
+
+      const dsDate = new Date(ds.date);
+      const dayKey = `${dsDate.getFullYear()}-${String(dsDate.getMonth() + 1).padStart(2,'0')}-${String(dsDate.getDate()).padStart(2,'0')}`;
+
+      console.log(`➡️ กำลังรวมข้อมูลของวันที่ ${dayKey}`);
+
+      // ✅ กรองเฉพาะในช่วง 15 วัน
+      if (dsDate >= firstDate && dsDate <= endDate) {
         if (!stats[dayKey]) {
           stats[dayKey] = { date: dayKey, click: 0, view: 0, contract: 0, booking: 0, ctr: 0 };
         }
+
         stats[dayKey].click += ds.clicks ?? 0;
         stats[dayKey].view += ds.views ?? 0;
         stats[dayKey].contract += ds.contacts ?? 0;
         stats[dayKey].booking += ds.bookings ?? 0;
-      });
-    }
-
-    Object.values(stats).forEach(stat => {
-      stat.ctr = stat.view > 0 ? parseFloat(((stat.click / stat.view) * 100).toFixed(2)) : 0;
+      } else {
+        console.log(`⚠️ ข้าม ${dayKey} (อยู่นอกช่วง 15 วัน)`);
+      }
     });
-
-    return Object.values(stats).sort((a, b) => a.date.localeCompare(b.date));
   }
+
+  // ✅ คำนวณ CTR
+  Object.values(stats).forEach(stat => {
+    stat.ctr = stat.view > 0 ? parseFloat(((stat.click / stat.view) * 100).toFixed(2)) : 0;
+  });
+
+  const result = Object.values(stats).sort((a, b) => a.date.localeCompare(b.date));
+
+  console.log("📊 ผลลัพธ์สุดท้าย:", result);
+
+  return result;
+}
+
 
   async incrementBookings(placeId: string) {
     const ad = await this.adModel.findOne({ placeId });
@@ -357,6 +401,9 @@ export class AdService {
     return { message: 'Ad deleted successfully' };
   }
 
+  async removeAdsByPlaceId(placeId: string) {
+      await this.adModel.deleteMany({ placeId: placeId });
+  }
 
 
   async incrementViews(placeId: string) {
@@ -476,4 +523,7 @@ async incrementContacts(placeId: string) {
     );
     console.log(`${result.modifiedCount} ads expired at ${now}`);
   }
+
+
+
 }

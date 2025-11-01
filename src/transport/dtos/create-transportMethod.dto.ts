@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsBoolean, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsBoolean, IsString, IsUrl } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateTransportMethodDto {
@@ -22,4 +22,10 @@ export class CreateTransportMethodDto {
       @IsOptional()
       @IsBoolean()
       hasBooking?: boolean;
+      
+      @ApiProperty()
+      @IsOptional()
+      @IsUrl()
+      imageUrl?: string;
+      
 }

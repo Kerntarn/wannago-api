@@ -23,12 +23,13 @@ export class PlacesService {
     private readonly adService: AdService,
   ) {
     this.useMockData = process.env.NODE_ENV === 'test' || process.env.USE_MOCK_DATA === 'true';
+    console.log(`USE_MOCK_DATA: ${process.env.USE_MOCK_DATA}, useMockData: ${this.useMockData}`);
   }
 
   async create(data: any, type: string, user: User): Promise<PlaceDocument> {
-    if (this.useMockData) {
-      throw new Error('Create operation not supported with mock data');
-    }
+    // if (this.useMockData) {
+    //   throw new Error('Create operation not supported with mock data');
+    // }
     if (!user) throw new UnauthorizedException('User need token to create place');
 
     try {
@@ -45,16 +46,15 @@ export class PlacesService {
   }
 
   async findAll(type?: string, userId?: ObjectId): Promise<PlaceDocument[]> {
-    if (this.useMockData) {
-      return mockPlaces.filter(place => {
-        const typeMatch = type ? (place as any).__t === type : true;
-        const userIdMatch = userId ? place.providerId.toString() === userId.toString() : true;
-        return typeMatch && userIdMatch;
-      });
-    }
-
+    // if (this.useMockData) {      //temporary remove (this was move to db)
+    //   return mockPlaces.filter(place => {
+    //     const typeMatch = type ? (place as any).__t === type : true;
+    //     const userIdMatch = userId ? place.providerId.toString() === userId.toString() : true;
+    //     return typeMatch && userIdMatch;
+    //   });
+    // }
+    console.log("type:", typeof(type));
     let places: PlaceDocument[];
-    
     if (type && userId) {
       places = await this.placeModel.find({ type: type, providerId: userId }).exec();
     } else if (type && !userId) {
@@ -62,6 +62,7 @@ export class PlacesService {
     } else if (!type && userId) {
       places = await this.placeModel.find({ providerId: userId }).exec();
     } else {
+      console.log('all case');
       places = await this.placeModel.find().exec();
     }
     if (places.length === 0) {
@@ -114,15 +115,18 @@ export class PlacesService {
     return place.save();
   }
 
-  async remove(id: string) {
-    if (this.useMockData) {
-      throw new Error('Remove operation not supported with mock data');
-    }
-    const currentUserId = "001";
-    const deleted = await this.placeModel.findOneAndDelete({ _id: id, providerId: currentUserId}).exec();
+  async remove(id: string, curUserId: ObjectId) {
+    // if (this.useMockData) {
+    //   throw new Error('Remove operation not supported with mock data');
+    // }
+    const deleted = await this.placeModel.findOneAndDelete({ _id: id, providerId: curUserId }).exec();
     if (!deleted) {
       throw new NotFoundException(`Place with ID ${id} not found or not owned by user`);
     }
+    
+    this.adService.removeAdsByPlaceId(id);
+    
+    return ;
   }
   
   async getMostRelatedPlace(places: PlaceDocument[], preferredTags: string[]): Promise<PlaceDocument[]> {
