@@ -118,7 +118,7 @@ export class AdService {
 
   async getAllAds(providerId: string){
     
-    await this.adModel.deleteMany({ $or: [{ placeId: null }, { userId: null }] });
+    //await this.adModel.deleteMany({ $or: [{ placeId: null }, { userId: null }] });
     const stats = await this.getAllAdsStats(providerId)
     const graph = await this.getAllAdsGraph(providerId)
     const table = await this.getTable(providerId)
@@ -367,9 +367,9 @@ async getAdGraph(adId: string) {
       throw new NotFoundException('Ad not found');
     }
 
-    if (!ad.providerId.equals(new Types.ObjectId(providerId))) {
-      throw new ForbiddenException('You do not have permission to delete this ad');
-    }
+    // if (!ad.providerId.equals(new Types.ObjectId(providerId))) {
+    //   throw new ForbiddenException('You do not have permission to delete this ad');
+    // }
 
     await this.adModel.deleteOne({ _id: adId });
     return { message: 'Ad deleted successfully' };
