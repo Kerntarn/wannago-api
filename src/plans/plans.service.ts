@@ -9,10 +9,8 @@ import { TagsService } from 'src/tags/tags.service';
 import { PlaceDocument } from 'src/schemas/place.schema';
 import { TransportMethodService } from 'src/transport/transportMethod.service';
 import {
-  ItineraryDay,
   LocationInItinerary,
 } from 'src/schemas/itinerary.schema';
-import { Place } from 'src/schemas/place.schema';
 
 @Injectable()
 export class PlansService {
@@ -20,8 +18,6 @@ export class PlansService {
     @InjectModel(Plan.name) private planModel: Model<planDocument>,
     private readonly guestService: GuestService,
     private readonly placesService: PlacesService,
-    private readonly tagsService: TagsService,
-    private readonly transportMethodService: TransportMethodService, // Inject TransportMethodService
   ) {}
 
   async create(createPlanDto: CreatePlanDto, userId: string) {
@@ -154,7 +150,6 @@ export class PlansService {
           dayPlaces.push(availableAccommodations.shift());
         }
 
-        // Clear existing locations
         planEntity.itinerary[day].locations.splice(0, planEntity.itinerary[day].locations.length);
 
         dayPlaces.forEach((place, index) => {

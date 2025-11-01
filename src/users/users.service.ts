@@ -73,7 +73,6 @@ export class UsersService {
             throw new NotFoundException('User not found');
         }
 
-        // Handle password hashing if password is being updated
         if (updateUserDto.password) {
             updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
         }
