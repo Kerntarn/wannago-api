@@ -14,6 +14,7 @@ import {
 } from 'class-validator';
 import { ObjectId } from 'mongoose';
 import { Place } from 'src/schemas/place.schema';
+import { TransportMethod } from 'src/schemas/transportMethod.schema';
 
 export class CreatePlanDto {
   @ApiProperty({
@@ -58,7 +59,7 @@ export class CreatePlanDto {
   endDate?: string;
 
   @ApiProperty({
-    example: 'https://maps.app.goo.gl/your-location OR [100.5018, 13.7563]',
+    example: '[100.5018, 13.7563]',
     description:
       'URL of the source location (e.g., from Google Maps) or an array of [longitude, latitude]',
     required: false,
@@ -101,6 +102,10 @@ export class UpdatePlanDto {
     @ApiProperty()
     @IsNotEmpty()
     transportation: string;
+
+    @ApiProperty()
+    @IsOptional()
+    providedCar?: string;
     
     @ApiProperty()
     @IsNotEmpty()

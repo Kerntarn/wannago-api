@@ -55,7 +55,7 @@ export class PlansService {
 
   async findOne(id: string, curUserId?: ObjectId) {
     // console.log(id);
-    const plan = await this.planModel.findById(id).exec();
+    const plan = await this.planModel.findById(id).populate('providedCar', '-updatedAt -createdAt -providerId').exec();
     let isOwner = false;
     if (curUserId && plan.ownerId.toString() === curUserId.toString()) {
         isOwner = true;
@@ -70,7 +70,8 @@ export class PlansService {
     if (plan.ownerId.toString() !== curUserId.toString()) {
         throw new ForbiddenException('You are not authorized to update this plan.');
     }
-    return this.planModel.findByIdAndUpdate(updatePlanDto._id, updatePlanDto, { new: true }).exec();
+    const updatedPlan = await this.planModel.findByIdAndUpdate(updatePlanDto._id, updatePlanDto, { new: true }).populate('providedCar', '-updatedAt -createdAt -providerId').exec();
+    return updatedPlan;
   }
 
   async remove(id: string, curUserId: ObjectId) {
@@ -117,7 +118,7 @@ export class PlansService {
       }
     }
  
-    const planEntity: Partial<Plan> = {
+    const planEntity: Partial<Plan> = { 
       title: `ทริป ${planWhere || 'ไร้ชื่อ'}`,
       where: planWhere,
       category: dto.category,
