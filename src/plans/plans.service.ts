@@ -24,13 +24,13 @@ export class PlansService {
   async create(createPlanDto: CreatePlanDto, userId: string) {
     const newPlan = await this.generatePlan(createPlanDto);
     const createdPlan = new this.planModel({ ...newPlan, ownerId: userId });
-    let transportMethods: TransportMethod[] = [];
-    if (createdPlan.transportation !== "รถยนต์ส่วนตัว"){
-      transportMethods = await this.transportMethodService.getTransportMethodsForPlan();
-    }
+    // let transportMethods: TransportMethod[] = [];
+    // if (createdPlan.transportation !== "รถยนต์ส่วนตัว"){
+    //   transportMethods = await this.transportMethodService.getTransportMethodsForPlan();
+    // }
 
     await createdPlan.save();
-    return { createdPlan, transportMethods };
+    return createdPlan;
   }
 
   async createTemporary(createPlanDto: CreatePlanDto, guestId: string) {
