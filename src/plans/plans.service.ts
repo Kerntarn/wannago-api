@@ -48,7 +48,7 @@ export class PlansService {
     }
 
     console.log(planToClone.toObject())
-    const clonedPlanData: planDocument = new this.planModel({ ...planToClone.toObject(), ownerId: userId, source: clonedPlanDto.source });
+    const clonedPlanData: planDocument = new this.planModel({ ...planToClone.toObject(), ownerId: userId, source: clonedPlanDto.source, title: planToClone.title + ' (copy)' });
     await clonedPlanData.save()
     return clonedPlanData;
   }
