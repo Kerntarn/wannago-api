@@ -27,7 +27,7 @@ export class PlansController {
   constructor(private readonly plansService: PlansService) {}
   
   @UseGuards(GuestAuthGuard)
-  @ApiBearerAuth('guest-jwt')
+  @ApiBearerAuth('jwt')
   @Post('temporary')
   createTemporary(
     @Body() createPlanDto: CreatePlanDto,
@@ -60,6 +60,8 @@ export class PlansController {
     return this.plansService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt')
   @Get(':id')
   async findOne(@Param('id') id: string, @CurrentUser() user: User) {
     if (!user) {

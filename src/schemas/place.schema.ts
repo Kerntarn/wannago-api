@@ -25,17 +25,10 @@ export class Place {
   @Prop()
   tags: string[];
 
-  @Prop({ type: Date })
-  startTime?: Date;
-
-  @Prop({ type: Date })
-  endTime?: Date;
 
   @Prop({ type: String })
   openHours?: string;
 
-  @Prop({ type: Number })
-  stayMin?: number;
 }
 
 export const PlaceSchema = SchemaFactory.createForClass(Place);

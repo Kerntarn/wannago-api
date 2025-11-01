@@ -24,13 +24,6 @@ export class CreatePlaceDto {
     @IsNotEmpty()
     tags: string[];
 
-    @ApiProperty({ example: "09:00", required: false })
-    @IsOptional()
-    startTime?: string;
-
-    @ApiProperty({ example: "17:00", required: false })
-    @IsOptional()
-    endTime?: string;
 
     @ApiProperty({ example: "09:00-17:00", required: false })
     @IsOptional()
@@ -55,23 +48,6 @@ export class UpdatePlaceDto {
     @IsOptional()
     description?: string;
 
-    @ApiProperty({ example: "09:00", required: false })
-    @IsOptional()
-    startTime?: string;
-
-    @ApiProperty({ example: "17:00", required: false })
-    @IsOptional()
-    endTime?: string;
-
-    @ApiProperty({ example: "09:00-17:00", required: false })
-    @IsOptional()
-    openHours?: string;
-
-    @ApiProperty({ example: 120, required: false })
-    @IsOptional()
-    @IsNumber()
-    stayMin?: number;
-
     @ApiProperty()
     tags: string[];
 }
@@ -81,13 +57,6 @@ export class FindPlaceQueryDto {
   @IsOptional()
   type?: string;
 
-  @ApiProperty({ example: "09:00", required: false })
-  @IsOptional()
-  startTime?: string;
-
-  @ApiProperty({ example: "17:00", required: false })
-  @IsOptional()
-  endTime?: string;
 
   @ApiProperty({ example: "09:00-17:00", required: false })
   @IsOptional()

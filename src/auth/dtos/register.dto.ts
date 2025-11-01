@@ -29,7 +29,7 @@ export class RegisterDto {
 
     @ApiPropertyOptional()
     @IsOptional()
-    @IsString()
+    @IsUrl()
     profileImage?: string;
 
     @ApiPropertyOptional()

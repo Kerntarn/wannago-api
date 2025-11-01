@@ -48,7 +48,7 @@ export class PlansService {
     }
 
     console.log(planToClone.toObject())
-    const clonedPlanData: planDocument = new this.planModel({ ...planToClone.toObject(), ownerId: userId, source: clonedPlanDto.source });
+    const clonedPlanData: planDocument = new this.planModel({ ...planToClone.toObject(), ownerId: userId, source: clonedPlanDto.source, title: planToClone.title + ' (copy)' });
     await clonedPlanData.save()
     return clonedPlanData;
   }
@@ -201,9 +201,36 @@ export class PlansService {
           dayPlaces.push(availableAccommodations.shift());
         }
 
-        planEntity.itinerary[day].locations.splice(0, planEntity.itinerary[day].locations.length);
+        // Clear existing locations and travel times
+        planEntity.itinerary[day].locations.splice(
+          0,
+          planEntity.itinerary[day].locations.length,
+        );
+        planEntity.itinerary[day].travelTimes = [];
+
+        // Calculate travel times between places for the day
+        for (let i = 0; i < dayPlaces.length - 1; i++) {
+          const travelTimeMinutes = Math.floor(Math.random() * 30) + 5; // Random time between 5 and 35 minutes
+          planEntity.itinerary[day].travelTimes.push(travelTimeMinutes);
+        }
+
+        // Set the start time for the day's activities
+        const dayStartDate = new Date(day); // 'day' is the YYYY-MM-DD string key
+        dayStartDate.setHours(9, 0, 0, 0); // Start day at 9 AM
+
+        let currentTime = dayStartDate;
 
         dayPlaces.forEach((place, index) => {
+          const startTime = new Date(currentTime);
+
+          // Use stayMin from place or default to 2 hours
+          const durationMinutes = (place as any).stayMin || 120;
+
+          const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
+
+          const stayMinutes =
+            (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+
           const locationInItinerary: LocationInItinerary = {
             id: place._id.toString(),
             name: place.name,
@@ -211,28 +238,42 @@ export class PlansService {
             order: index + 1,
             image: place.imageUrl,
             description: place.description,
-            startTime: place.startTime,
-            endTime: place.endTime,
-            stayMinutes: place.stayMin,
-            openHours: undefined, // Will be calculated below if restaurant
+            startTime: startTime.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            }),
+            endTime: endTime.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            }),
+            stayMinutes: stayMinutes,
+            openHours: (place as any).openHours,
           };
 
           if ((place as any).type === 'attraction') {
-            locationInItinerary.description = `Entry Fee: ${(place as any).entryFee}฿. ${place.description}`;
+            locationInItinerary.description = `Entry Fee: ${
+              (place as any).entryFee
+            }฿. ${place.description}`;
           } else if ((place as any).type === 'restaurant') {
-            locationInItinerary.openHours = (place as any).openHours;
-            locationInItinerary.description = `Cuisine: ${(place as any).cuisineType}. Contact: ${(place as any).contactInfo}. ${place.description}`;
+            locationInItinerary.description = `Cuisine: ${
+              (place as any).cuisineType
+            }. Contact: ${(place as any).contactInfo}. ${place.description}`;
           } else if ((place as any).type === 'accommodation') {
-            locationInItinerary.description = `Facilities: ${(place as any).facilities.join(', ')}. Star Rating: ${(place as any).starRating}. Redirect: ${(place as any).redirectUrl || 'N/A'}. ${place.description}`;
+            locationInItinerary.description = `Facilities: ${
+              (place as any).facilities.join(', ')
+            }. Star Rating: ${(place as any).starRating}. Redirect: ${
+              (place as any).redirectUrl || 'N/A'
+            }. ${place.description}`;
           }
-          planEntity.itinerary[day].locations.push(locationInItinerary);
-        });
 
-        planEntity.itinerary[day].travelTimes = [];
-        for (let i = 0; i < dayPlaces.length - 1; i++) {
-          const travelTimeMinutes = Math.floor(Math.random() * 30) + 5; // Random time between 5 and 35 minutes
-          planEntity.itinerary[day].travelTimes.push(travelTimeMinutes);
-        }
+          planEntity.itinerary[day].locations.push(locationInItinerary);
+
+          // Update currentTime for the next place, including travel time
+          const travelTime = planEntity.itinerary[day].travelTimes[index] || 0;
+          currentTime = new Date(endTime.getTime() + travelTime * 60000);
+        });
       });
     };
 
