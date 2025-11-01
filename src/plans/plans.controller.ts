@@ -33,15 +33,6 @@ export class PlansController {
     return this.plansService.create(createPlanDto, user._id.toString());
   }
 
-  @UseGuards(GuestAuthGuard)
-  @ApiBearerAuth('guest-jwt')
-  @Post('temporary')
-  createTemporary(
-    @Body() createPlanDto: CreatePlanDto,
-    @CurrentGuest() guest: GuestDocument,
-  ) {
-    return this.plansService.createTemporary(createPlanDto, guest.guestId);
-  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth('jwt')
