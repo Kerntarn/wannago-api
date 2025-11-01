@@ -88,5 +88,11 @@ export class AdController {
     const ad = await this.adService.incrementBookings(id);
     return { data: ad };
   }
+
+  @Patch(':id/addMockData')
+  async addMockData(@Param('id') id: string) {
+    const updatedAd = await this.adService.addMockData(id);
+    return { message: 'Mock data added', data: updatedAd };
+  }
   
 }
