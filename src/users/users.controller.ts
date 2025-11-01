@@ -10,7 +10,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard, GuestAuthGuard)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth('jwt')
 export class UsersController {
     constructor(private readonly userservice: UsersService) {}
@@ -22,7 +22,12 @@ export class UsersController {
     return this.userservice.findAll();
   }
 
-  @Get('')
+  @Get(':id')
+  getUserById(@Param('id') id: string) {
+    return this.userservice.findById(id);
+  }
+
+  @Get()
   getProfile(@CurrentUser() user: User) {
     console.log(user);
     return user;
@@ -43,10 +48,5 @@ export class UsersController {
   @Roles(UserRole.ADMIN)
   deleteUser(@Param('id') id: string) {
     return this.userservice.remove(id);
-  }
-
-  @Get(':id')
-  getUserById(@Param('id') id: string) {
-    return this.userservice.findById(id);
   }
 }
