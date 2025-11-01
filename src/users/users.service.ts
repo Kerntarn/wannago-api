@@ -58,34 +58,6 @@ export class UsersService {
         return this.userModel.findById(id).exec();
     }
 
-    // async update(id: string, updateDto: UpdateUserDto): Promise<User> {
-    //     const existingUser = await this.userModel.findById(id);
-    //     if (!existingUser) {
-    //         throw new NotFoundException('User not found');
-    //     }
-
-    //     // Prevent updating email or username to an already existing one
-    //     if (updateDto.email && updateDto.email !== existingUser.email) {
-    //         const userWithEmail = await this.userModel.findOne({ email: updateDto.email });
-    //         if (userWithEmail) {
-    //             throw new ConflictException('Email already in use');
-    //         }
-    //     }
-    //     if (updateDto.userName && updateDto.userName !== existingUser.userName) {
-    //         const userWithUsername = await this.userModel.findOne({ userName: updateDto.userName });
-    //         if (userWithUsername) {
-    //             throw new ConflictException('Username already in use');
-    //         }
-    //     }
-
-    //     // Hash password if it's being updated
-    //     if (updateDto.password) {
-    //         updateDto.password = await bcrypt.hash(updateDto.password, 10);
-    //     }
-
-    //     const updatedUser = await this.userModel.findByIdAndUpdate(id, updateDto, { new: true }).exec();
-    //     return updatedUser;
-    // }
 
     async remove(id: string): Promise<User> {
         const deletedUser = await this.userModel.findByIdAndDelete(id).exec();
@@ -93,5 +65,20 @@ export class UsersService {
             throw new NotFoundException('User not found');
         }
         return deletedUser;
+    }
+
+    async update(id: string, updateUserDto: any): Promise<User> {
+        const existingUser = await this.userModel.findById(id).exec();
+        if (!existingUser) {
+            throw new NotFoundException('User not found');
+        }
+
+        // Handle password hashing if password is being updated
+        if (updateUserDto.password) {
+            updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+        }
+
+        Object.assign(existingUser, updateUserDto);
+        return existingUser.save();
     }
 }

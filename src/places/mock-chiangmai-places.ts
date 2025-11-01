@@ -12,7 +12,7 @@ export const mockChiangmaiPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['temple', 'culture', 'mountain', 'landmark'],
     type: 'attraction',
-    entryFee: 30, // Example entry fee
+    entryFee: 30, 
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3802'),
@@ -51,7 +51,7 @@ export const mockChiangmaiPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['national park', 'nature', 'mountain', 'adventure'],
     type: 'attraction',
-    entryFee: 300, // Example entry fee for foreigners, local might be different
+    entryFee: 300, 
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3805'),

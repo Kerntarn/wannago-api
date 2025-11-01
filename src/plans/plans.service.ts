@@ -81,7 +81,7 @@ export class PlansService {
     const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
     const endDate = dto.endDate
       ? new Date(dto.endDate)
-      : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); // Default to 3 days trip
+      : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); 
 
     const planEntity: Partial<Plan> = {
       title: `ทริป ${dto.where || 'ไร้ชื่อ'}`,
@@ -210,7 +210,6 @@ export class PlansService {
           planEntity.itinerary[day].locations.push(locationInItinerary);
         });
 
-        // Mock travel times between locations for the current day
         planEntity.itinerary[day].travelTimes = [];
         for (let i = 0; i < dayPlaces.length - 1; i++) {
           const travelTimeMinutes = Math.floor(Math.random() * 30) + 5; // Random time between 5 and 35 minutes
