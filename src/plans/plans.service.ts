@@ -9,6 +9,7 @@ import { TagsService } from 'src/tags/tags.service';
 import { PlaceDocument } from 'src/schemas/place.schema';
 import { TransportMethodService } from 'src/transport/transportMethod.service';
 import { ItineraryDay, LocationInItinerary } from 'src/schemas/itinerary.schema';
+import { TransportMethod } from 'src/schemas/transportMethod.schema';
 
 @Injectable()
 export class PlansService {
@@ -23,8 +24,13 @@ export class PlansService {
   async create(createPlanDto: CreatePlanDto, userId: string) {
     const newPlan = await this.generatePlan(createPlanDto);
     const createdPlan = new this.planModel({ ...newPlan, ownerId: userId });
+    let transportMethods: TransportMethod[] = [];
+    if (createdPlan.transportation !== "รถยนต์ส่วนตัว"){
+      transportMethods = await this.transportMethodService.getTransportMethodsForPlan();
+    }
+
     await createdPlan.save();
-    return createdPlan;
+    return { createdPlan, transportMethods };
   }
 
   async createTemporary(createPlanDto: CreatePlanDto, guestId: string) {
@@ -79,7 +85,7 @@ export class PlansService {
 
 
   async generatePlan(dto: CreatePlanDto): Promise<Partial<Plan>> {
-    const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
+    const startDate = dto.startDate ? new Date(dto.startDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Default to one week from now
     const endDate = dto.endDate ? new Date(dto.endDate) : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); // Default to 3 days trip
 
     const planEntity: Partial<Plan> = {
@@ -153,7 +159,7 @@ export class PlansService {
       });
     };
 
-    if (dto.where) {
+    if (dto.where || dto.where === '') {
       const places = await this.placesService.findByName(dto.where);
       addLocationsToItinerary(places);
     } else if (dto.source) {

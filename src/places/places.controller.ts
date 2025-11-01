@@ -46,6 +46,7 @@ export class PlacesController {
 
   @Get('all')
   findAllPlaces(@Query('type') t?: FindPlaceQueryDto) {
+    console.log("type", typeof(t))
     if (typeof(t) == "string"){
       return this.placesService.findAll(String(t));
     }

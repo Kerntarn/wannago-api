@@ -21,16 +21,16 @@ export class Plan{
     @Prop({ type: [String], required: true })
     category: string[];
 
-    @Prop({ required: false })
+    @Prop({ required: false, default: 'รถยนต์ส่วนตัว' })
     transportation: string;
 
     @Prop({ required: false, default: 1 })
-    people: number;
+    people: number; 
 
-    @Prop({ required: false, type: Date })
+    @Prop({ required: true, type: Date })
     startDate: Date;
 
-    @Prop({ required: false, type: Date })
+    @Prop({ required: true, type: Date })
     endDate: Date;
 
     @Prop({ type: mongoose.Schema.Types.Mixed })
