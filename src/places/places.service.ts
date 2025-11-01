@@ -114,7 +114,8 @@ export class PlacesService {
   }
 
   async remove(id: string, curUserId: ObjectId) {
-    const deleted = await this.placeModel.findOneAndDelete({ _id: id, providerId: curUserId }).exec();
+
+    const deleted = await this.placeModel.findOneAndDelete({ _id: id }).exec();
     if (!deleted) {
       throw new NotFoundException(`Place with ID ${id} not found or not owned by user`);
     }

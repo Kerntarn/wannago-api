@@ -10,7 +10,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { PlansService } from './plans.service';
-import { CreatePlanDto } from 'src/plans/plan.dto';
+import { ClonedPlanDto, CreatePlanDto } from 'src/plans/plan.dto';
 import { UpdatePlanDto } from 'src/plans/plan.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/role.guard';
@@ -25,14 +25,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 @Controller('plans')
 export class PlansController {
   constructor(private readonly plansService: PlansService) {}
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('jwt')
-  @Post()
-  create(@Body() createPlanDto: CreatePlanDto, @CurrentUser() user: User) {
-    return this.plansService.create(createPlanDto, user._id.toString());
-  }
-
+  
   @UseGuards(GuestAuthGuard)
   @ApiBearerAuth('guest-jwt')
   @Post('temporary')
@@ -43,6 +36,22 @@ export class PlansController {
     return this.plansService.createTemporary(createPlanDto, guest.guestId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt')
+  @Post('clone')
+  clone(@Body() clonedPlanDto: ClonedPlanDto, @CurrentUser() user: User) {
+    return this.plansService.clone(clonedPlanDto, user._id.toString());
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('jwt')
+  @Post()
+  create(@Body() createPlanDto: CreatePlanDto, @CurrentUser() user: User) {
+    return this.plansService.create(createPlanDto, user._id.toString());
+  }
+
+
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth('jwt')
   @Roles(UserRole.ADMIN)
@@ -52,8 +61,6 @@ export class PlansController {
   }
 
   @Get(':id')
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth('jwt')
   async findOne(@Param('id') id: string, @CurrentUser() user: User) {
     if (!user) {
       return this.plansService.findOne(id);

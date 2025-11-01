@@ -28,7 +28,7 @@ export class UsersService {
             throw new ConflictException('Email or username already exists');
         }
 
-        let role = registerDto.isProvider ? UserRole.PROVIDER : UserRole.USER;
+        let role = isProvider ? UserRole.PROVIDER : UserRole.USER;
         const createdUser = new this.userModel({
             email,
             password,

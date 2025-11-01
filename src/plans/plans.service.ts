@@ -1,6 +1,6 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreatePlanDto, UpdatePlanDto } from 'src/plans/plan.dto';
+import { ClonedPlanDto, CreatePlanDto, UpdatePlanDto } from 'src/plans/plan.dto';
 import { Model, ObjectId } from 'mongoose';
 import { Plan, planDocument } from 'src/schemas/plan.schema';
 import { GuestService } from 'src/guest/guest.service';
@@ -24,13 +24,13 @@ export class PlansService {
   async create(createPlanDto: CreatePlanDto, userId: string) {
     const newPlan = await this.generatePlan(createPlanDto);
     const createdPlan = new this.planModel({ ...newPlan, ownerId: userId });
-    let transportMethods: TransportMethod[] = [];
-    if (createdPlan.transportation !== "รถยนต์ส่วนตัว"){
-      transportMethods = await this.transportMethodService.getTransportMethodsForPlan();
-    }
+    // let transportMethods: TransportMethod[] = [];
+    // if (createdPlan.transportation !== "รถยนต์ส่วนตัว"){
+    //   transportMethods = await this.transportMethodService.getTransportMethodsForPlan();
+    // }
 
     await createdPlan.save();
-    return { createdPlan, transportMethods };
+    return createdPlan;
   }
 
   async createTemporary(createPlanDto: CreatePlanDto, guestId: string) {
@@ -39,6 +39,18 @@ export class PlansService {
     this.guestService.addPlanToGuest(guestId, createdPlan._id);
     await createdPlan.save();
     return createdPlan;
+  }
+
+  async clone(clonedPlanDto: ClonedPlanDto, userId: string) {
+    const planToClone = await this.planModel.findById(clonedPlanDto.originalPlanId).select('-_id -createdAt -updatedAt -ownerId').exec();
+    if (!planToClone) {
+      throw new NotFoundException('Plan to clone not found');
+    }
+
+    console.log(planToClone.toObject())
+    const clonedPlanData: planDocument = new this.planModel({ ...planToClone.toObject(), ownerId: userId, source: clonedPlanDto.source });
+    await clonedPlanData.save()
+    return clonedPlanData;
   }
 
   async assignPlanToUser(planId: string, userId: string): Promise<Plan> {
@@ -55,7 +67,7 @@ export class PlansService {
 
   async findOne(id: string, curUserId?: ObjectId) {
     // console.log(id);
-    const plan = await this.planModel.findById(id).exec();
+    const plan = await this.planModel.findById(id).populate('providedCar', '-updatedAt -createdAt -providerId').exec();
     let isOwner = false;
     if (curUserId && plan.ownerId.toString() === curUserId.toString()) {
         isOwner = true;
@@ -70,7 +82,8 @@ export class PlansService {
     if (plan.ownerId.toString() !== curUserId.toString()) {
         throw new ForbiddenException('You are not authorized to update this plan.');
     }
-    return this.planModel.findByIdAndUpdate(updatePlanDto._id, updatePlanDto, { new: true }).exec();
+    const updatedPlan = await this.planModel.findByIdAndUpdate(updatePlanDto._id, updatePlanDto, { new: true }).populate('providedCar', '-updatedAt -createdAt -providerId').exec();
+    return updatedPlan;
   }
 
   async remove(id: string, curUserId: ObjectId) {
@@ -87,18 +100,46 @@ export class PlansService {
     const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
     const endDate = dto.endDate
       ? new Date(dto.endDate)
-      : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); 
+      : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000);
 
-    const planEntity: Partial<Plan> = {
-      title: `ทริป ${dto.where || 'ไร้ชื่อ'}`,
-      where: dto.where,
+    let sourceCoordinates: [number, number] | undefined;
+    if (dto.source) {
+      if (typeof dto.source === 'string') {
+        try {
+          sourceCoordinates = await this.placesService.getCoordinates(dto.source);
+        } catch (error) {
+          throw new BadRequestException('Invalid source URL');
+        }
+      } else if (Array.isArray(dto.source) && dto.source.length === 2) {
+        sourceCoordinates = dto.source as [number, number];
+      } else {
+        throw new BadRequestException(
+          'Invalid source format. Must be a URL string or a [longitude, latitude] array.',
+        );
+      }
+    }
+
+    let planWhere = dto.where;
+    if (dto.isCurrentLocationHotel && sourceCoordinates) {
+      const nearbyPlaces = await this.placesService.findNearbyPlaces(sourceCoordinates, 1);
+      const accommodation = nearbyPlaces.find(
+        (place) => (place as any).type === 'accommodation',
+      );
+      if (accommodation) {
+        planWhere = accommodation.name;
+      }
+    }
+ 
+    const planEntity: Partial<Plan> = { 
+      title: `ทริป ${planWhere || 'ไร้ชื่อ'}`,
+      where: planWhere,
       category: dto.category,
       budget: dto.budget,
       transportation: dto.transportation,
       people: dto.people,
       startDate: startDate,
       endDate: endDate,
-      source: dto.source,
+      source: sourceCoordinates,
       itinerary: {},
     };
 

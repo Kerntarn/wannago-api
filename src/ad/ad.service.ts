@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Ad, AdDocument } from '../schemas/ad.schema';
+import { Ad, AdDocument, DailyStat } from '../schemas/ad.schema';
 import { Transaction, TransactionDocument } from '../schemas/transaction.schema';
 import { Place, PlaceDocument } from '../schemas/place.schema';
 import { CreateAdDto } from './dtos/create-ad.dto';
@@ -117,7 +117,8 @@ export class AdService {
   }
 
   async getAllAds(providerId: string){
-
+    
+    //await this.adModel.deleteMany({ $or: [{ placeId: null }, { userId: null }] });
     const stats = await this.getAllAdsStats(providerId)
     const graph = await this.getAllAdsGraph(providerId)
     const table = await this.getTable(providerId)
@@ -327,33 +328,6 @@ async getAdGraph(adId: string) {
 
   return result;
 }
-
-
-  async incrementBookings(placeId: string) {
-    const ad = await this.adModel.findOne({ placeId });
-    if (!ad) return false;
-
-    const today = new Date();
-    const dayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-
-    let todayStat = ad.dailyStats?.find(ds => {
-      const dsKey = `${ds.date.getFullYear()}-${ds.date.getMonth()}-${ds.date.getDate()}`;
-      return dsKey === dayKey;
-    });
-
-    if (!todayStat) {
-      todayStat = { date: today, views: 0, clicks: 0, contacts: 0, bookings: 0, ctr: 0 };
-      if (!ad.dailyStats) ad.dailyStats = [];
-      ad.dailyStats.push(todayStat);
-    }
-
-    ad.bookings += 1;
-    todayStat.bookings += 1;
-
-    ad.markModified('dailyStats');
-    await ad.save();
-    return true;
-  }
   
   async getTable(providerId: string) {
    
@@ -393,9 +367,9 @@ async getAdGraph(adId: string) {
       throw new NotFoundException('Ad not found');
     }
 
-    if (!ad.providerId.equals(new Types.ObjectId(providerId))) {
-      throw new ForbiddenException('You do not have permission to delete this ad');
-    }
+    // if (!ad.providerId.equals(new Types.ObjectId(providerId))) {
+    //   throw new ForbiddenException('You do not have permission to delete this ad');
+    // }
 
     await this.adModel.deleteOne({ _id: adId });
     return { message: 'Ad deleted successfully' };
@@ -507,7 +481,31 @@ async incrementContacts(placeId: string) {
   return true;
 }
 
+async incrementBookings(placeId: string) {
+  const ad = await this.adModel.findOne({ placeId });
+  if (!ad) return false;
 
+  const today = new Date();
+  const dayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+
+  let todayStat = ad.dailyStats?.find(ds => {
+    const dsKey = `${ds.date.getFullYear()}-${ds.date.getMonth()}-${ds.date.getDate()}`;
+    return dsKey === dayKey;
+  });
+
+  if (!todayStat) {
+    todayStat = { date: today, views: 0, clicks: 0, contacts: 0, bookings: 0, ctr: 0 };
+    if (!ad.dailyStats) ad.dailyStats = [];
+    ad.dailyStats.push(todayStat);
+  }
+
+  ad.bookings += 1;
+  todayStat.bookings += 1;
+
+  ad.markModified('dailyStats');
+  await ad.save();
+  return true;
+}
 
   @Cron(CronExpression.EVERY_10_SECONDS)
   async checkExpiredAds() {
@@ -524,6 +522,64 @@ async incrementContacts(placeId: string) {
     console.log(`${result.modifiedCount} ads expired at ${now}`);
   }
 
+  async findById(id: string): Promise<AdDocument> {
+    const ad = await this.adModel.findById(id);
+    if (!ad) throw new NotFoundException('Ad not found');
+    return ad;
+  }
 
+  async update(id: string, updateData: Partial<Ad>): Promise<AdDocument> {
+    return this.adModel.findByIdAndUpdate(id, updateData, { new: true });
+  }
+
+  /** ฟังก์ชันสร้าง mock dailyStats และอัปเดต field หลัก */
+  async addMockData(id: string): Promise<AdDocument> {
+    const ad = await this.findById(id);
+
+    const startDate = new Date('2025-10-15');
+    const endDate = new Date('2025-10-30');
+
+    const dailyStats: DailyStat[] = [];
+
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const views = Math.floor(Math.random() * 100);
+      const clicks = Math.floor(Math.random() * 50);
+      const contacts = Math.floor(Math.random() * 20);
+      const bookings = Math.floor(Math.random() * 10);
+
+      dailyStats.push({
+        date: new Date(d),
+        views,
+        clicks,
+        contacts,
+        bookings,
+        ctr: views > 0 ? +(clicks / views * 100).toFixed(2) : 0,
+      });
+    }
+
+    // รวมค่า dailyStats เป็นค่า aggregate
+    const totalViews = dailyStats.reduce((sum, s) => sum + s.views, 0);
+    const totalClicks = dailyStats.reduce((sum, s) => sum + s.clicks, 0);
+    const totalContacts = dailyStats.reduce((sum, s) => sum + s.contacts, 0);
+    const totalBookings = dailyStats.reduce((sum, s) => sum + s.bookings, 0);
+    const totalCtr = totalViews > 0 ? +(totalClicks / totalViews * 100).toFixed(2) : 0;
+
+    // อัปเดตทั้ง dailyStats และ field หลัก
+    ad.dailyStats = dailyStats;
+    ad.views = totalViews;
+    ad.clicks = totalClicks;
+    ad.contacts = totalContacts;
+    ad.bookings = totalBookings;
+    ad.ctr = totalCtr;
+
+    return this.update(id, {
+      dailyStats,
+      views: totalViews,
+      clicks: totalClicks,
+      contacts: totalContacts,
+      bookings: totalBookings,
+      ctr: totalCtr,
+    });
+  }
 
 }

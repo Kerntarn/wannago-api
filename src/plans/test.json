@@ -38,5 +38,13 @@
         13.7563
       ]
     }
+  },
+  {
+    "case": "Plan with current location as hotel",
+    "data": {
+      "category": ["พักผ่อน"],
+      "source": [100.5018, 13.7563],
+      "isCurrentLocationHotel": true
+    }
   }
 ]
