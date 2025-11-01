@@ -49,5 +49,6 @@ export class RegisterDto {
 
     @ApiProperty({ default: false })
     @IsBoolean()
-    isProvider: boolean;
+    @IsOptional()
+    isProvider?: boolean;
 }

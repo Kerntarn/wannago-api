@@ -134,6 +134,18 @@ export class UpdatePlanDto {
     source: number[];
 }
 
+export class ClonedPlanDto {
+    @ApiProperty()
+    @IsNotEmpty()
+    originalPlanId: string;
+
+    @ApiProperty({ example: [100.5018, 13.7563] })
+    @IsOptional()
+    @IsArray()
+    @IsNumber({}, { each: true })
+    source: number[];
+}
+
 
 class PlaceWithTime extends PartialType(Place) {
     @ApiProperty({ example: "10:00", description: "Start time for the location in HH:mm format" })

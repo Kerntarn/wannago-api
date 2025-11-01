@@ -1,6 +1,6 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreatePlanDto, UpdatePlanDto } from 'src/plans/plan.dto';
+import { ClonedPlanDto, CreatePlanDto, UpdatePlanDto } from 'src/plans/plan.dto';
 import { Model, ObjectId } from 'mongoose';
 import { Plan, planDocument } from 'src/schemas/plan.schema';
 import { GuestService } from 'src/guest/guest.service';
@@ -39,6 +39,18 @@ export class PlansService {
     this.guestService.addPlanToGuest(guestId, createdPlan._id);
     await createdPlan.save();
     return createdPlan;
+  }
+
+  async clone(clonedPlanDto: ClonedPlanDto, userId: string) {
+    const planToClone = await this.planModel.findById(clonedPlanDto.originalPlanId).select('-_id -createdAt -updatedAt -ownerId').exec();
+    if (!planToClone) {
+      throw new NotFoundException('Plan to clone not found');
+    }
+
+    console.log(planToClone.toObject())
+    const clonedPlanData: planDocument = new this.planModel({ ...planToClone.toObject(), ownerId: userId, source: clonedPlanDto.source });
+    await clonedPlanData.save()
+    return clonedPlanData;
   }
 
   async assignPlanToUser(planId: string, userId: string): Promise<Plan> {
