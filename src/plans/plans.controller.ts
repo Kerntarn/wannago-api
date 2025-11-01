@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Put,
+} from '@nestjs/common';
 import { PlansService } from './plans.service';
 import { CreatePlanDto } from 'src/plans/plan.dto';
 import { UpdatePlanDto } from 'src/plans/plan.dto';
@@ -26,10 +36,13 @@ export class PlansController {
   @UseGuards(GuestAuthGuard)
   @ApiBearerAuth('guest-jwt')
   @Post('temporary')
-  createTemporary(@Body() createPlanDto: CreatePlanDto, @CurrentGuest() guest: GuestDocument) {
+  createTemporary(
+    @Body() createPlanDto: CreatePlanDto,
+    @CurrentGuest() guest: GuestDocument,
+  ) {
     return this.plansService.createTemporary(createPlanDto, guest.guestId);
   }
- 
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth('jwt')
   @Roles(UserRole.ADMIN)
@@ -50,7 +63,7 @@ export class PlansController {
   @ApiBearerAuth('jwt')
   @Get()
   findByUser(@CurrentUser() currentUser: User) {
-    return this.plansService.findAll(currentUser._id)
+    return this.plansService.findAll(currentUser._id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -62,7 +75,7 @@ export class PlansController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('jwt')  
+  @ApiBearerAuth('jwt')
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: User) {
     return this.plansService.remove(id, user._id);
