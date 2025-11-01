@@ -1,8 +1,6 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { asyncWrapProviders } from 'async_hooks';
 import { Model, ObjectId } from 'mongoose';
-import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
 import { User } from 'src/schemas/user.schema';
 import { TagsService } from 'src/tags/tags.service';
@@ -23,12 +21,13 @@ export class PlacesService {
     private readonly adService: AdService,
   ) {
     this.useMockData = process.env.NODE_ENV === 'test' || process.env.USE_MOCK_DATA === 'true';
+    console.log(`USE_MOCK_DATA: ${process.env.USE_MOCK_DATA}, useMockData: ${this.useMockData}`);
   }
 
   async create(data: any, type: string, user: User): Promise<PlaceDocument> {
-    if (this.useMockData) {
-      throw new Error('Create operation not supported with mock data');
-    }
+    // if (this.useMockData) {
+    //   throw new Error('Create operation not supported with mock data');
+    // }
     if (!user) throw new UnauthorizedException('User need token to create place');
 
     try {
@@ -45,16 +44,15 @@ export class PlacesService {
   }
 
   async findAll(type?: string, userId?: ObjectId): Promise<PlaceDocument[]> {
-    if (this.useMockData) {
-      return mockPlaces.filter(place => {
-        const typeMatch = type ? (place as any).__t === type : true;
-        const userIdMatch = userId ? place.providerId.toString() === userId.toString() : true;
-        return typeMatch && userIdMatch;
-      });
-    }
-
+    // if (this.useMockData) {      //temporary remove (this was move to db)
+    //   return mockPlaces.filter(place => {
+    //     const typeMatch = type ? (place as any).__t === type : true;
+    //     const userIdMatch = userId ? place.providerId.toString() === userId.toString() : true;
+    //     return typeMatch && userIdMatch;
+    //   });
+    // }
+    console.log("type:", typeof(type));
     let places: PlaceDocument[];
-    
     if (type && userId) {
       places = await this.placeModel.find({ type: type, providerId: userId }).exec();
     } else if (type && !userId) {
@@ -62,6 +60,7 @@ export class PlacesService {
     } else if (!type && userId) {
       places = await this.placeModel.find({ providerId: userId }).exec();
     } else {
+      console.log('all case');
       places = await this.placeModel.find().exec();
     }
     if (places.length === 0) {
@@ -86,7 +85,9 @@ export class PlacesService {
       if (name === 'เชียงใหม่') {
         return Promise.resolve(mockChiangmaiPlaces);
       }
-      return Promise.resolve(mockPlaces.filter(place => new RegExp(name, 'i').test(place.name)));
+      if (name ===''){
+        return Promise.resolve(mockBangkokAdventurePlaces);
+      }
     }
     const places = await this.placeModel.find({ name: new RegExp(name, 'i') }).exec();
     console.log(places);
@@ -112,47 +113,44 @@ export class PlacesService {
     return place.save();
   }
 
-  async remove(id: string) {
-    if (this.useMockData) {
-      throw new Error('Remove operation not supported with mock data');
-    }
-    const currentUserId = "001";
-    const deleted = await this.placeModel.findOneAndDelete({ _id: id, providerId: currentUserId}).exec();
+  async remove(id: string, curUserId: ObjectId) {
+    const deleted = await this.placeModel.findOneAndDelete({ _id: id, providerId: curUserId }).exec();
     if (!deleted) {
       throw new NotFoundException(`Place with ID ${id} not found or not owned by user`);
     }
+    
+    this.adService.removeAdsByPlaceId(id);
+    
+    return ;
   }
   
   async getMostRelatedPlace(places: PlaceDocument[], preferredTags: string[]): Promise<PlaceDocument[]> {
     if (this.useMockData) {
-      // Simple mock for related places based on tags
       return Promise.resolve(places.filter(place =>
         place.tags.some(tag => preferredTags.includes(tag))
-      ).slice(0, 3)); // Return top 3 for mock
+      ).slice(0, 3)); 
     }
     console.log(`This is${places}`)
     const tags = this.tagsService.getWeight();
     
    const result = places.map(place => {
       const score = place.tags.map(tag => (preferredTags.includes(tag) ? tags[tag] : 0));
-      return { place, score }; // Return place object directly
+      return { place, score }; 
     });
     result.sort((a, b) => {
       const sumA = a.score.reduce((acc, curr) => acc + curr, 0);
       const sumB = b.score.reduce((acc, curr) => acc + curr, 0);
       return sumB - sumA;
     });
-    return result.map(item => item.place); // Return only the PlaceDocument
+    return result.map(item => item.place); 
   }
   
   async getCoordinates(url: string): Promise<[ number, number ]> {
     if (this.useMockData) {
-      // Return a fixed coordinate for mock data testing
       return Promise.resolve([100.5018, 13.7563]);
     }
     if (!url) throw new BadRequestException('URL is required');
 
-    //short link
     if (url.includes('goo.gl') || url.includes('maps.app.goo.gl')) {
       try {
         const res = await axios.get(url, {
@@ -177,7 +175,6 @@ export class PlacesService {
         throw new BadRequestException('Invalid Google Maps URL');
       }
     } else {
-      //full link
       const coords = this.parseLatLng(url);
       if (!coords) throw new BadRequestException('Cannot extract coordinates from link');
       return coords;
@@ -187,7 +184,7 @@ export class PlacesService {
   private getDistanceBetweenCoordinates(coord1: [number, number], coord2: [number, number]): number {
     const toRad = (x: number) => (x * Math.PI) / 180;
 
-    const R = 6371; // Earth's radius in kilometers
+    const R = 6371;
 
     const dLat = toRad(coord2[1] - coord1[1]);
     const dLon = toRad(coord2[0] - coord1[0]);
@@ -233,15 +230,15 @@ export class PlacesService {
   }
 
     async findDefaultPlaces(categories: string[]): Promise<PlaceDocument[]> {
-    if (this.useMockData) {
-      const adventureCategories = ["ธรรมชาติ", "ผจญภัย"];
-      if (categories.some(cat => adventureCategories.includes(cat))) {
-        return Promise.resolve(mockBangkokAdventurePlaces);
+      if (this.useMockData) {
+        const adventureCategories = ['ธรรมชาติ', 'ผจญภัย'];
+        if (categories.some((cat) => adventureCategories.includes(cat))) {
+          return Promise.resolve(mockBangkokAdventurePlaces);
+        }
       }
+      // Fallback to a default list if no matching categories
+      return Promise.resolve(mockPlaces.slice(0, 3));
     }
-    // Fallback to a default list if no matching categories
-    return Promise.resolve(mockPlaces.slice(0, 3));
-  }
 
   private parseLatLng(url: string): [ number, number ] | null {
 

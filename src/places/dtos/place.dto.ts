@@ -12,10 +12,9 @@ export class CreatePlaceDto {
     @IsOptional()
     imageUrl?: string;
     
-    @ApiProperty({ example: "https://maps.app.goo.gl/MfMgEck64HyW5S2D9" })
+    @ApiProperty({ example: "[13.7563, 100.5018] or https://maps.app.goo.gl/MfMgEck64HyW5S2D9" })
     @IsNotEmpty()
-    @IsUrl()
-    location: string;
+    location: any; // Allow both string URL and [lat, long]
     
     @ApiProperty({ example: "สถานที่ท่vงเที่ยวที่น่าสนใจสุดๆไปเลย อมก. โคตรจะเบิ้มๆน่ะ" })
     @IsNotEmpty()
@@ -24,6 +23,23 @@ export class CreatePlaceDto {
     @ApiProperty({ example: ["budget"]})
     @IsNotEmpty()
     tags: string[];
+
+    @ApiProperty({ example: "09:00", required: false })
+    @IsOptional()
+    startTime?: string;
+
+    @ApiProperty({ example: "17:00", required: false })
+    @IsOptional()
+    endTime?: string;
+
+    @ApiProperty({ example: "09:00-17:00", required: false })
+    @IsOptional()
+    openHours?: string;
+
+    @ApiProperty({ example: 120, required: false })
+    @IsOptional()
+    @IsNumber()
+    stayMin?: number;
 }
 
 export class UpdatePlaceDto {
@@ -39,6 +55,23 @@ export class UpdatePlaceDto {
     @IsOptional()
     description?: string;
 
+    @ApiProperty({ example: "09:00", required: false })
+    @IsOptional()
+    startTime?: string;
+
+    @ApiProperty({ example: "17:00", required: false })
+    @IsOptional()
+    endTime?: string;
+
+    @ApiProperty({ example: "09:00-17:00", required: false })
+    @IsOptional()
+    openHours?: string;
+
+    @ApiProperty({ example: 120, required: false })
+    @IsOptional()
+    @IsNumber()
+    stayMin?: number;
+
     @ApiProperty()
     tags: string[];
 }
@@ -47,4 +80,21 @@ export class FindPlaceQueryDto {
   @ApiProperty({ example: "Accommodation", required: false })
   @IsOptional()
   type?: string;
+
+  @ApiProperty({ example: "09:00", required: false })
+  @IsOptional()
+  startTime?: string;
+
+  @ApiProperty({ example: "17:00", required: false })
+  @IsOptional()
+  endTime?: string;
+
+  @ApiProperty({ example: "09:00-17:00", required: false })
+  @IsOptional()
+  openHours?: string;
+
+  @ApiProperty({ example: 120, required: false })
+  @IsOptional()
+  @IsNumber()
+  stayMin?: number;
 }

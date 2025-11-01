@@ -15,11 +15,11 @@ export class LocationInItinerary {
     @Prop({ required: true })
     order: number;
 
-    @Prop()
-    startTime: string;
+    @Prop({ type: Date })
+    startTime?: Date;
 
-    @Prop()
-    endTime: string;
+    @Prop({ type: Date })
+    endTime?: Date;
 
     @Prop()
     stayMinutes: number;

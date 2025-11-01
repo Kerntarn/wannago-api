@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, ObjectId } from 'mongoose';
+import { Plan } from './plan.schema';
 //what pattern will the data be saved in db
 export type PlaceDocument = HydratedDocument<Place>;
 @Schema({
@@ -24,6 +25,17 @@ export class Place {
   @Prop()
   tags: string[];
 
+  @Prop({ type: Date })
+  startTime?: Date;
+
+  @Prop({ type: Date })
+  endTime?: Date;
+
+  @Prop({ type: String })
+  openHours?: string;
+
+  @Prop({ type: Number })
+  stayMin?: number;
 }
 
 export const PlaceSchema = SchemaFactory.createForClass(Place);

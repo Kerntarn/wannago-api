@@ -4,6 +4,26 @@ import { AdStatus } from 'src/ad/ad.asset';
 
 export type AdDocument = HydratedDocument<Ad> & { createdAt: Date; updatedAt: Date };
 
+export class DailyStat {
+  @Prop({ required: true })
+  date: Date; 
+
+  @Prop({ default: 0 })
+  views: number;
+
+  @Prop({ default: 0 })
+  clicks: number;
+
+  @Prop({ default: 0 })
+  contacts: number;
+
+  @Prop({ default: 0 })
+  bookings: number;
+
+  @Prop({ default: 0 })
+  ctr: number; 
+}
+
 @Schema({ timestamps: true })
 export class Ad {
 
@@ -39,6 +59,9 @@ export class Ad {
 
   @Prop({ default: 0 }) 
   ctr: number;
+
+  @Prop({ type: [Object], default: [] })
+  dailyStats?: DailyStat[];
 }
 
 export const AdSchema = SchemaFactory.createForClass(Ad);

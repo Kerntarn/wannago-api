@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreatePlanDto, UpdatePlanDto } from 'src/plans/plan.dto';
 import { Model, ObjectId } from 'mongoose';
@@ -9,6 +9,7 @@ import { TagsService } from 'src/tags/tags.service';
 import { PlaceDocument } from 'src/schemas/place.schema';
 import { TransportMethodService } from 'src/transport/transportMethod.service';
 import { ItineraryDay, LocationInItinerary } from 'src/schemas/itinerary.schema';
+import { TransportMethod } from 'src/schemas/transportMethod.schema';
 
 @Injectable()
 export class PlansService {
@@ -17,14 +18,19 @@ export class PlansService {
     private readonly guestService: GuestService,
     private readonly placesService: PlacesService,
     private readonly tagsService: TagsService,
-    private readonly transportMethodService: TransportMethodService, // Inject TransportMethodService
+    private readonly transportMethodService: TransportMethodService,
   ) {}
 
   async create(createPlanDto: CreatePlanDto, userId: string) {
     const newPlan = await this.generatePlan(createPlanDto);
     const createdPlan = new this.planModel({ ...newPlan, ownerId: userId });
+    let transportMethods: TransportMethod[] = [];
+    if (createdPlan.transportation !== "รถยนต์ส่วนตัว"){
+      transportMethods = await this.transportMethodService.getTransportMethodsForPlan();
+    }
+
     await createdPlan.save();
-    return createdPlan;
+    return { createdPlan, transportMethods };
   }
 
   async createTemporary(createPlanDto: CreatePlanDto, guestId: string) {
@@ -47,22 +53,41 @@ export class PlansService {
     return this.planModel.find().exec();
   }
 
-  findOne(id: string) {
-    return this.planModel.findById(id).exec();
+  async findOne(id: string, curUserId: ObjectId) {
+    console.log(id);
+    const plan = await this.planModel.findById(id).exec();
+    let isOwner = true;
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        isOwner = false;
+    }
+
+    return { plan, isOwner };
+
   }
 
-  update(id: string, updatePlanDto: UpdatePlanDto) {
-    return this.planModel.findByIdAndUpdate(id, updatePlanDto).exec();
+  async update(updatePlanDto: UpdatePlanDto, curUserId: ObjectId) {
+    const plan = await this.planModel.findById(updatePlanDto._id).exec();
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        throw new ForbiddenException('You are not authorized to update this plan.');
+    }
+    return this.planModel.findByIdAndUpdate(updatePlanDto._id, updatePlanDto, { new: true }).exec();
   }
 
-  remove(id: string) {
+  async remove(id: string, curUserId: ObjectId) {
+    const plan = await this.planModel.findById(id).exec();
+    if (plan.ownerId.toString() !== curUserId.toString()) {
+        throw new ForbiddenException('You are not authorized to delete this plan.');
+    }
+
+
     return this.planModel.findByIdAndDelete(id).exec();
   }
 
-
   async generatePlan(dto: CreatePlanDto): Promise<Partial<Plan>> {
     const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
-    const endDate = dto.endDate ? new Date(dto.endDate) : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); // Default to 3 days trip
+    const endDate = dto.endDate
+      ? new Date(dto.endDate)
+      : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); 
 
     const planEntity: Partial<Plan> = {
       title: `ทริป ${dto.where || 'ไร้ชื่อ'}`,
@@ -77,7 +102,9 @@ export class PlansService {
       itinerary: {},
     };
 
-    const diffTime = Math.abs(planEntity.endDate.getTime() - planEntity.startDate.getTime());
+    const diffTime = Math.abs(
+      planEntity.endDate.getTime() - planEntity.startDate.getTime(),
+    );
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
     // Create an empty itinerary for the duration
@@ -86,12 +113,15 @@ export class PlansService {
       currentDate.setDate(planEntity.startDate.getDate() + i);
       const dateString = currentDate.toISOString().split('T')[0];
       const dayName = currentDate.toLocaleString('th-TH', { weekday: 'long' });
-      const date = currentDate.toLocaleString('th-TH', { day: 'numeric', month: 'long' });
+      const date = currentDate.toLocaleString('th-TH', {
+        day: 'numeric',
+        month: 'long',
+      });
 
       planEntity.itinerary[dateString] = {
         dayName: dayName,
         date: date,
-        description: "",
+        description: '',
         locations: [] as any,
         travelTimes: [],
       };
@@ -100,9 +130,15 @@ export class PlansService {
     const addLocationsToItinerary = (places: PlaceDocument[]) => {
       const days = Object.keys(planEntity.itinerary);
 
-      const attractions = places.filter(p => (p as any).type === 'attraction');
-      const restaurants = places.filter(p => (p as any).type === 'restaurant');
-      const accommodations = places.filter(p => (p as any).type === 'accommodation');
+      const attractions = places.filter(
+        (p) => (p as any).type === 'attraction',
+      );
+      const restaurants = places.filter(
+        (p) => (p as any).type === 'restaurant',
+      );
+      const accommodations = places.filter(
+        (p) => (p as any).type === 'accommodation',
+      );
 
       const availableRestaurants = [...restaurants];
       const availableAccommodations = [...accommodations];
@@ -115,37 +151,60 @@ export class PlansService {
         const dayAttractions = attractions.slice(startIndex, endIndex);
 
         const dayPlaces = [...dayAttractions];
-        
+
         if (availableRestaurants.length > 0) {
           dayPlaces.push(availableRestaurants.shift());
         }
-        
+
         if (availableAccommodations.length > 0) {
           dayPlaces.push(availableAccommodations.shift());
         }
 
-        planEntity.itinerary[day].locations = dayPlaces.map((place, index) => ({
-          id: place._id.toString(),
-          name: place.name,
-          source: place.location as [number, number],
-          order: index + 1,
-          image: place.imageUrl,
-          description: place.description,
-        })) as any;
+        planEntity.itinerary[day].locations.splice(0, planEntity.itinerary[day].locations.length);
+
+        dayPlaces.forEach((place, index) => {
+          const locationInItinerary: LocationInItinerary = {
+            id: place._id.toString(),
+            name: place.name,
+            source: place.location as [number, number],
+            order: index + 1,
+            image: place.imageUrl,
+            description: place.description,
+            startTime: place.startTime,
+            endTime: place.endTime,
+            stayMinutes: place.stayMin,
+            openHours: undefined, // Will be calculated below if restaurant
+          };
+
+          if ((place as any).type === 'attraction') {
+            locationInItinerary.description = `Entry Fee: ${(place as any).entryFee}฿. ${place.description}`;
+          } else if ((place as any).type === 'restaurant') {
+            locationInItinerary.openHours = (place as any).openHours;
+            locationInItinerary.description = `Cuisine: ${(place as any).cuisineType}. Contact: ${(place as any).contactInfo}. ${place.description}`;
+          } else if ((place as any).type === 'accommodation') {
+            locationInItinerary.description = `Facilities: ${(place as any).facilities.join(', ')}. Star Rating: ${(place as any).starRating}. Redirect: ${(place as any).redirectUrl || 'N/A'}. ${place.description}`;
+          }
+          planEntity.itinerary[day].locations.push(locationInItinerary);
+        });
+
+        planEntity.itinerary[day].travelTimes = [];
+        for (let i = 0; i < dayPlaces.length - 1; i++) {
+          const travelTimeMinutes = Math.floor(Math.random() * 30) + 5; // Random time between 5 and 35 minutes
+          planEntity.itinerary[day].travelTimes.push(travelTimeMinutes);
+        }
       });
     };
 
-    if (dto.where) {
+    if (dto.where || dto.where === '') {
       const places = await this.placesService.findByName(dto.where);
       addLocationsToItinerary(places);
     } else if (dto.source) {
-      const defaultPlaces = await this.placesService.findDefaultPlaces(dto.category);
+      const defaultPlaces = await this.placesService.findDefaultPlaces(
+        dto.category,
+      );
       addLocationsToItinerary(defaultPlaces);
     }
 
     return planEntity;
   }
-
-
 }
-

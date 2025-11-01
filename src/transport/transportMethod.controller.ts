@@ -5,13 +5,17 @@ import { UpdateTransportMethodDto } from './dtos/update-transportMethod.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from 'src/schemas/user.schema';
 
 @Controller('transport-method')
 export class TransportMethodController {
   constructor(private readonly transportService: TransportMethodService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth('jwt')
+  @Roles(UserRole.PROVIDER)
   @Post()
   async create(@Body() dto: CreateTransportMethodDto, @CurrentUser() user) {
     const created = await this.transportService.create(dto, user);
@@ -42,8 +46,9 @@ export class TransportMethodController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth('jwt')
+  @Roles(UserRole.PROVIDER)
   @Patch(':id')
   async update(@Param('id') id: string, @Body() dto: UpdateTransportMethodDto, @CurrentUser() user) {
     const updated = await this.transportService.update(id, dto);
@@ -54,8 +59,9 @@ export class TransportMethodController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth('jwt')
+  @Roles(UserRole.PROVIDER)
   @Delete(':id')
   async remove(@Param('id') id: string, @CurrentUser() user) {
     const deleted = await this.transportService.remove(id);
