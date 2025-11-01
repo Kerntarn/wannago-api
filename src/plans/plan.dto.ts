@@ -14,6 +14,7 @@ import {
 } from 'class-validator';
 import { ObjectId } from 'mongoose';
 import { Place } from 'src/schemas/place.schema';
+import { ItineraryDay, LocationInItinerary } from 'src/schemas/itinerary.schema';
 import { TransportMethod } from 'src/schemas/transportMethod.schema';
 
 export class CreatePlanDto {
@@ -121,7 +122,7 @@ export class UpdatePlanDto {
     
     @ApiProperty()
     @IsNotEmpty()
-    itinerary: Record<string, Itinerary>;
+    itinerary: Record<string, ItineraryDay>;
     
     @ApiProperty()
     @IsNotEmpty()
@@ -163,5 +164,5 @@ class PlaceWithTime extends PartialType(Place) {
 
 class Itinerary {
     description: string;
-    locations: PlaceWithTime[];
+    locations: LocationInItinerary[];
 }
