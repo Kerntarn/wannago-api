@@ -18,7 +18,7 @@ export class PlansService {
     private readonly guestService: GuestService,
     private readonly placesService: PlacesService,
     private readonly tagsService: TagsService,
-    private readonly transportMethodService: TransportMethodService, // Inject TransportMethodService
+    private readonly transportMethodService: TransportMethodService,
   ) {}
 
   async create(createPlanDto: CreatePlanDto, userId: string) {
@@ -83,25 +83,56 @@ export class PlansService {
     return this.planModel.findByIdAndDelete(id).exec();
   }
 
-
   async generatePlan(dto: CreatePlanDto): Promise<Partial<Plan>> {
-    const startDate = dto.startDate ? new Date(dto.startDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Default to one week from now
-    const endDate = dto.endDate ? new Date(dto.endDate) : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); // Default to 3 days trip
+    const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
+    const endDate = dto.endDate
+      ? new Date(dto.endDate)
+      : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000);
 
+    let sourceCoordinates: [number, number] | undefined;
+    if (dto.source) {
+      if (typeof dto.source === 'string') {
+        try {
+          sourceCoordinates = await this.placesService.getCoordinates(dto.source);
+        } catch (error) {
+          throw new BadRequestException('Invalid source URL');
+        }
+      } else if (Array.isArray(dto.source) && dto.source.length === 2) {
+        sourceCoordinates = dto.source as [number, number];
+      } else {
+        throw new BadRequestException(
+          'Invalid source format. Must be a URL string or a [longitude, latitude] array.',
+        );
+      }
+    }
+
+    let planWhere = dto.where;
+    if (dto.isCurrentLocationHotel && sourceCoordinates) {
+      const nearbyPlaces = await this.placesService.findNearbyPlaces(sourceCoordinates, 1);
+      const accommodation = nearbyPlaces.find(
+        (place) => (place as any).type === 'accommodation',
+      );
+      if (accommodation) {
+        planWhere = accommodation.name;
+      }
+    }
+ 
     const planEntity: Partial<Plan> = {
-      title: `ทริป ${dto.where || 'ไร้ชื่อ'}`,
-      where: dto.where,
+      title: `ทริป ${planWhere || 'ไร้ชื่อ'}`,
+      where: planWhere,
       category: dto.category,
       budget: dto.budget,
       transportation: dto.transportation,
       people: dto.people,
       startDate: startDate,
       endDate: endDate,
-      source: dto.source,
+      source: sourceCoordinates,
       itinerary: {},
     };
 
-    const diffTime = Math.abs(planEntity.endDate.getTime() - planEntity.startDate.getTime());
+    const diffTime = Math.abs(
+      planEntity.endDate.getTime() - planEntity.startDate.getTime(),
+    );
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
     // Create an empty itinerary for the duration
@@ -110,12 +141,15 @@ export class PlansService {
       currentDate.setDate(planEntity.startDate.getDate() + i);
       const dateString = currentDate.toISOString().split('T')[0];
       const dayName = currentDate.toLocaleString('th-TH', { weekday: 'long' });
-      const date = currentDate.toLocaleString('th-TH', { day: 'numeric', month: 'long' });
+      const date = currentDate.toLocaleString('th-TH', {
+        day: 'numeric',
+        month: 'long',
+      });
 
       planEntity.itinerary[dateString] = {
         dayName: dayName,
         date: date,
-        description: "",
+        description: '',
         locations: [] as any,
         travelTimes: [],
       };
@@ -124,9 +158,15 @@ export class PlansService {
     const addLocationsToItinerary = (places: PlaceDocument[]) => {
       const days = Object.keys(planEntity.itinerary);
 
-      const attractions = places.filter(p => (p as any).type === 'attraction');
-      const restaurants = places.filter(p => (p as any).type === 'restaurant');
-      const accommodations = places.filter(p => (p as any).type === 'accommodation');
+      const attractions = places.filter(
+        (p) => (p as any).type === 'attraction',
+      );
+      const restaurants = places.filter(
+        (p) => (p as any).type === 'restaurant',
+      );
+      const accommodations = places.filter(
+        (p) => (p as any).type === 'accommodation',
+      );
 
       const availableRestaurants = [...restaurants];
       const availableAccommodations = [...accommodations];
@@ -139,23 +179,47 @@ export class PlansService {
         const dayAttractions = attractions.slice(startIndex, endIndex);
 
         const dayPlaces = [...dayAttractions];
-        
+
         if (availableRestaurants.length > 0) {
           dayPlaces.push(availableRestaurants.shift());
         }
-        
+
         if (availableAccommodations.length > 0) {
           dayPlaces.push(availableAccommodations.shift());
         }
 
-        planEntity.itinerary[day].locations = dayPlaces.map((place, index) => ({
-          id: place._id.toString(),
-          name: place.name,
-          source: place.location as [number, number],
-          order: index + 1,
-          image: place.imageUrl,
-          description: place.description,
-        })) as any;
+        planEntity.itinerary[day].locations.splice(0, planEntity.itinerary[day].locations.length);
+
+        dayPlaces.forEach((place, index) => {
+          const locationInItinerary: LocationInItinerary = {
+            id: place._id.toString(),
+            name: place.name,
+            source: place.location as [number, number],
+            order: index + 1,
+            image: place.imageUrl,
+            description: place.description,
+            startTime: place.startTime,
+            endTime: place.endTime,
+            stayMinutes: place.stayMin,
+            openHours: undefined, // Will be calculated below if restaurant
+          };
+
+          if ((place as any).type === 'attraction') {
+            locationInItinerary.description = `Entry Fee: ${(place as any).entryFee}฿. ${place.description}`;
+          } else if ((place as any).type === 'restaurant') {
+            locationInItinerary.openHours = (place as any).openHours;
+            locationInItinerary.description = `Cuisine: ${(place as any).cuisineType}. Contact: ${(place as any).contactInfo}. ${place.description}`;
+          } else if ((place as any).type === 'accommodation') {
+            locationInItinerary.description = `Facilities: ${(place as any).facilities.join(', ')}. Star Rating: ${(place as any).starRating}. Redirect: ${(place as any).redirectUrl || 'N/A'}. ${place.description}`;
+          }
+          planEntity.itinerary[day].locations.push(locationInItinerary);
+        });
+
+        planEntity.itinerary[day].travelTimes = [];
+        for (let i = 0; i < dayPlaces.length - 1; i++) {
+          const travelTimeMinutes = Math.floor(Math.random() * 30) + 5; // Random time between 5 and 35 minutes
+          planEntity.itinerary[day].travelTimes.push(travelTimeMinutes);
+        }
       });
     };
 
@@ -163,13 +227,12 @@ export class PlansService {
       const places = await this.placesService.findByName(dto.where);
       addLocationsToItinerary(places);
     } else if (dto.source) {
-      const defaultPlaces = await this.placesService.findDefaultPlaces(dto.category);
+      const defaultPlaces = await this.placesService.findDefaultPlaces(
+        dto.category,
+      );
       addLocationsToItinerary(defaultPlaces);
     }
 
     return planEntity;
   }
-
-
 }
-

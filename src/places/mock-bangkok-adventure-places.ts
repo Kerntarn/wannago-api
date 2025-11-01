@@ -1,7 +1,6 @@
-import { PlaceDocument } from "src/schemas/place.schema";
 import { Types } from "mongoose";
 
-export const mockBangkokAdventurePlaces: PlaceDocument[] = [
+export const mockBangkokAdventurePlaces: any[] = [
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3901"),
     name: "ซาฟารีเวิลด์",
@@ -11,7 +10,12 @@ export const mockBangkokAdventurePlaces: PlaceDocument[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["zoo", "adventure", "family", "nature"],
     type: "attraction",
-  } as any,
+    entryFee: 700,
+    openHours: "09:00-17:00",
+    startTime: "09:00",
+    endTime: "12:00",
+    stayMin: 180,
+  },
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3902"),
     name: "บางกระเจ้า",
@@ -21,7 +25,12 @@ export const mockBangkokAdventurePlaces: PlaceDocument[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["nature", "cycling", "park"],
     type: "attraction",
-  } as any,
+    entryFee: 0,
+    openHours: "06:00-18:00",
+    startTime: "07:00",
+    endTime: "10:00",
+    stayMin: 180,
+  },
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3903"),
     name: "ตลาดน้ำคลองลัดมะยม",
@@ -31,7 +40,12 @@ export const mockBangkokAdventurePlaces: PlaceDocument[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["market", "food", "nature", "adventure"],
     type: "attraction",
-  } as any,
+    entryFee: 0,
+    openHours: "08:00-16:00",
+    startTime: "11:00",
+    endTime: "13:00",
+    stayMin: 120,
+  },
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3904"),
     name: "ร้านอาหารบ้านน้ำเคียงดิน",
@@ -41,7 +55,13 @@ export const mockBangkokAdventurePlaces: PlaceDocument[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["food", "restaurant", "nature"],
     type: "restaurant",
-  } as any,
+    openHours: "17:00-23:00",
+    startTime: "18:00",
+    endTime: "20:00",
+    stayMin: 120,
+    cuisineType: "Thai",
+    contactInfo: "02-123-4567",
+  },
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3905"),
     name: "โรงแรมสยามเคมปินสกี้ กรุงเทพ",
@@ -51,8 +71,15 @@ export const mockBangkokAdventurePlaces: PlaceDocument[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["hotel", "luxury", "accommodation"],
     type: "accommodation",
-  } as any,
-    {
+    facilities: ["pool", "spa", "wifi"],
+    starRating: 5,
+    openHours: "24/7",
+    startTime: "15:00",
+    endTime: "11:00",
+    stayMin: 1200,
+    redirectUrl: "https://www.kempinski.com/en/bangkok/siam-hotel/",
+  },
+  {
     _id: new Types.ObjectId("65275a5e3620e67160ad3906"),
     name: "The Raft Cafe & Restaurant",
     imageUrl: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/83/ba/a4/quelques-photos-de-la.jpg?w=600&h=400&s=1",
@@ -61,7 +88,13 @@ export const mockBangkokAdventurePlaces: PlaceDocument[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["food", "restaurant", "cafe", "nature"],
     type: "restaurant",
-  } as any,
+    openHours: "10:00-22:00",
+    startTime: "14:00",
+    endTime: "16:00",
+    stayMin: 120,
+    cuisineType: "Cafe & Thai",
+    contactInfo: "089-123-4567",
+  },
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3907"),
     name: "อนันตรา ริเวอร์ไซด์ กรุงเทพฯ รีสอร์ท",
@@ -71,5 +104,12 @@ export const mockBangkokAdventurePlaces: PlaceDocument[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["hotel", "resort", "luxury", "accommodation"],
     type: "accommodation",
-  } as any
+    facilities: ["pool", "spa", "river view"],
+    starRating: 5,
+    openHours: "24/7",
+    startTime: "15:00",
+    endTime: "12:00",
+    stayMin: 1260,
+    redirectUrl: "https://www.anantara.com/en/riverside-bangkok",
+  },
 ];
