@@ -9,101 +9,108 @@ import {
 } from 'src/schemas/transportMethod.schema';
 import { User, UserDocument } from 'src/schemas/user.schema';
 import * as bcrypt from 'bcrypt';
+import { mockBangkokAdventurePlaces } from 'src/places/mock-bangkok-adventure-places';
+import { mockChiangmaiPlaces } from 'src/places/mock-chiangmai-places';
+import { mockIsanPlaces } from 'src/places/mock-isan-places';
+import { mockPlaces } from 'src/places/mock-places';
+import { Attraction, attractionDocument } from 'src/schemas/attraction.schema';
+import { Restaurant, RestaurantDocument } from 'src/schemas/restaurant.schema';
+import { Accommodation, accommodationDocument } from 'src/schemas/accommodation.schema';
 
 @Injectable()
 export class SeedService {
   constructor(
     @InjectModel(Place.name) private placeModel: Model<PlaceDocument>,
+    @InjectModel(Attraction.name) private attractionModel: Model<attractionDocument>,
+    @InjectModel(Restaurant.name) private restaurantModel: Model<RestaurantDocument>,
+    @InjectModel(Accommodation.name) private accommodationModel: Model<accommodationDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(TransportMethod.name)
     private transportModel: Model<TransportMethodDocument>,
   ) {}
   // use 'npm run seed'
   async run() {
-    await Promise.all([
-      // this.userModel.deleteMany({}),
-      // this.placeModel.deleteMany({}),
-      // this.transportModel.deleteMany({}),
-    ]);
+    // await Promise.all([
+    //   this.userModel.deleteMany({}), // Commented out based on user feedback
+    //   this.placeModel.deleteMany({}), // Commented out based on user feedback
+    //   this.transportModel.deleteMany({}), // Commented out based on user feedback
+    // ]);
 
-    console.log('🗑️ Old data deleted');
+    console.log('🗑️ Old data will not be deleted'); // Updated message
+    
+    const adminUser = await this.userModel.findOneAndUpdate(
+      { email: '66010270@kmitl.ac.th' },
+      {
+        $set: {
+          email: '66010270@kmitl.ac.th',
+          role: 'admin',
+          password:
+            (await bcrypt.hash(process.env.ADMIN_PASSWORD, 10)) || 'admin',
+          firstName: 'Admin',
+          lastName: 'Naja',
+          userName: 'admin001',
+        },
+      },
+      { upsert: true, new: true }
+    );
+    const adminId = adminUser._id;
+    console.log(`Admin ID: ${adminId}`);
 
-    const users = await this.userModel.insertMany([
-      {
-        email: '66010270@kmitl.ac.th',
-        role: 'admin',
-        password:
-          (await bcrypt.hash(process.env.ADMIN_PASSWORD, 10)) || 'admin',
-        firstName: 'Admin',
-        lastName: 'Naja',
-        userName: 'admin001',
-      },
-    ]);
-    const adminId = users[0]._id;
-    await this.placeModel.insertMany([
-      {
-        name: 'Shabu Party',
-        location: [13.7225906, 100.7783234],
-        description: 'ชาบูร้านแจ่มย่านลาดกระบัง',
-        providerId: adminId,
-        type: 'Restaurant',
-        openingHours: '1970-01-01T07:00:00+07:00',
-        closingHours: '1970-01-01T23:30:00+07:00',
-        contactInfo: 'ig:shabu_party',
-        cuisineType: 'Suki Buffet',
-      },
-      {
-        name: 'ร้านไก่จีน',
-        location: [13.727688, 100.7715763],
-        description: 'ร้านไก่จีนย่านลาดกระบัง',
-        providerId: adminId,
-        type: 'Restaurant',
-        openingHours: '1970-01-01T11:00:00+07:00',
-        closingHours: '1970-01-01T22:00:00+07:00',
-        contactInfo: 'ig:J3K_chicken',
-        cuisineType: 'Chinese Fried Chicken',
-      },
-      {
-        name: 'อุทยานแห่งชาติเขาใหญ่',
-        location: [14.3109281, 101.5278666],
-        description: 'อุทยานที่โด่งดังที่เขาว่ากันอ่ะ',
-        providerId: adminId,
-        type: 'Attraction',
-        entryFee: 40,
-      },
-      {
-        name: 'ทะเลบางแสน',
-        location: [13.4856867, 101.0405108],
-        description: 'ทะเลที่คนเยอะชิบหาย หนึ่งในทะเลที่คนนึกถึงบ่อยที่สุด',
-        providerId: adminId,
-        type: 'Attraction',
-        entryFee: 0,
-      },
-      {
-        name: 'หอพักบ้านสบาย',
-        location: [13.7263258, 100.7708484, 20],
-        description: 'หอพักที่มีบรรยากาศดีและราคาไม่แพง สุดยอดสุดๆไปเลย',
-        providerId: adminId,
-        type: 'Accommodation',
-        starRating: 0,
-        facilities: ['5G wifi'],
-      },
-    ]);
+    const allMockPlaces = [
+      ...mockBangkokAdventurePlaces,
+      ...mockChiangmaiPlaces,
+      ...mockIsanPlaces,
+      ...mockPlaces,
+    ];
 
-    await this.transportModel.insertMany([
+    for (const placeData of allMockPlaces) {
+      console.log(`Processing place: ${placeData.name} with _id: ${placeData._id} and type: ${placeData.type}`);
+      let model;
+      switch (placeData.type) {
+        case 'attraction':
+          model = this.attractionModel;
+          break;
+        case 'restaurant':
+          model = this.restaurantModel;
+          break;
+        case 'accommodation':
+          model = this.accommodationModel;
+          break;
+        default:
+          model = this.placeModel;
+      }
+      const placeResult = await model.findOneAndUpdate(
+        { _id: placeData._id }, // Use _id to find and update
+        { $set: { ...placeData, providerId: adminId } },
+        { upsert: true, new: true }
+      );
+      console.log(`Place findOneAndUpdate result for ${placeData.name}:`, placeResult);
+    }
+    
+    // Using findOneAndUpdate for transport methods as well
+    const mockTransportMethods = [
       {
         name: 'รถยนต์ส่วนตัว',
         description: 'สำหรับคนที่มีรถยนต์ส่วนตัวและขับขี่เดินทางด้วยตัวเอง',
         hasBooking: false,
         providerId: adminId,
-      }, //averageSpeed: 80, costPerKm: 2, ?
+      },
       {
         name: 'taxi',
         description: 'บริการรถแท็กซี่ หรือเรียกผ่านแอป',
         hasBooking: false,
         providerId: adminId,
-      }, //averageSpeed: 60, costPerKm: 5,
-    ]);
+      },
+    ];
+
+    for (const transportData of mockTransportMethods) {
+      const transportResult = await this.transportModel.findOneAndUpdate(
+        { name: transportData.name }, // Use name to find and update
+        { $set: { ...transportData, providerId: adminId } },
+        { upsert: true, new: true }
+      );
+      console.log(`Transport findOneAndUpdate result for ${transportData.name}:`, transportResult);
+    }
 
     console.log('✅ data seeded successfully');
   }

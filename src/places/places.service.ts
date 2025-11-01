@@ -89,7 +89,6 @@ export class PlacesService {
       if (name ===''){
         return Promise.resolve(mockBangkokAdventurePlaces);
       }
-      return Promise.resolve(mockBangkokAdventurePlaces);return Promise.resolve(mockBangkokAdventurePlaces);
     }
     const places = await this.placeModel.find({ name: new RegExp(name, 'i') }).exec();
     console.log(places);
@@ -128,34 +127,31 @@ export class PlacesService {
   
   async getMostRelatedPlace(places: PlaceDocument[], preferredTags: string[]): Promise<PlaceDocument[]> {
     if (this.useMockData) {
-      // Simple mock for related places based on tags
       return Promise.resolve(places.filter(place =>
         place.tags.some(tag => preferredTags.includes(tag))
-      ).slice(0, 3)); // Return top 3 for mock
+      ).slice(0, 3)); 
     }
     console.log(`This is${places}`)
     const tags = this.tagsService.getWeight();
     
    const result = places.map(place => {
       const score = place.tags.map(tag => (preferredTags.includes(tag) ? tags[tag] : 0));
-      return { place, score }; // Return place object directly
+      return { place, score }; 
     });
     result.sort((a, b) => {
       const sumA = a.score.reduce((acc, curr) => acc + curr, 0);
       const sumB = b.score.reduce((acc, curr) => acc + curr, 0);
       return sumB - sumA;
     });
-    return result.map(item => item.place); // Return only the PlaceDocument
+    return result.map(item => item.place); 
   }
   
   async getCoordinates(url: string): Promise<[ number, number ]> {
     if (this.useMockData) {
-      // Return a fixed coordinate for mock data testing
       return Promise.resolve([100.5018, 13.7563]);
     }
     if (!url) throw new BadRequestException('URL is required');
 
-    //short link
     if (url.includes('goo.gl') || url.includes('maps.app.goo.gl')) {
       try {
         const res = await axios.get(url, {
@@ -180,7 +176,6 @@ export class PlacesService {
         throw new BadRequestException('Invalid Google Maps URL');
       }
     } else {
-      //full link
       const coords = this.parseLatLng(url);
       if (!coords) throw new BadRequestException('Cannot extract coordinates from link');
       return coords;
@@ -190,7 +185,7 @@ export class PlacesService {
   private getDistanceBetweenCoordinates(coord1: [number, number], coord2: [number, number]): number {
     const toRad = (x: number) => (x * Math.PI) / 180;
 
-    const R = 6371; // Earth's radius in kilometers
+    const R = 6371;
 
     const dLat = toRad(coord2[1] - coord1[1]);
     const dLon = toRad(coord2[0] - coord1[0]);
@@ -236,15 +231,15 @@ export class PlacesService {
   }
 
     async findDefaultPlaces(categories: string[]): Promise<PlaceDocument[]> {
-    if (this.useMockData) {
-      const adventureCategories = ["ธรรมชาติ", "ผจญภัย"];
-      if (categories.some(cat => adventureCategories.includes(cat))) {
-        return Promise.resolve(mockBangkokAdventurePlaces);
+      if (this.useMockData) {
+        const adventureCategories = ['ธรรมชาติ', 'ผจญภัย'];
+        if (categories.some((cat) => adventureCategories.includes(cat))) {
+          return Promise.resolve(mockBangkokAdventurePlaces);
+        }
       }
+      // Fallback to a default list if no matching categories
+      return Promise.resolve(mockPlaces.slice(0, 3));
     }
-    // Fallback to a default list if no matching categories
-    return Promise.resolve(mockPlaces.slice(0, 3));
-  }
 
   private parseLatLng(url: string): [ number, number ] | null {
 

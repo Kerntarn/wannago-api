@@ -12,10 +12,9 @@ export class CreatePlaceDto {
     @IsOptional()
     imageUrl?: string;
     
-    @ApiProperty({ example: "https://maps.app.goo.gl/MfMgEck64HyW5S2D9" })
+    @ApiProperty({ example: "[13.7563, 100.5018] or https://maps.app.goo.gl/MfMgEck64HyW5S2D9" })
     @IsNotEmpty()
-    @IsUrl()
-    location: string;
+    location: any; // Allow both string URL and [lat, long]
     
     @ApiProperty({ example: "สถานที่ท่vงเที่ยวที่น่าสนใจสุดๆไปเลย อมก. โคตรจะเบิ้มๆน่ะ" })
     @IsNotEmpty()

@@ -12,6 +12,7 @@ import {
   ItineraryDay,
   LocationInItinerary,
 } from 'src/schemas/itinerary.schema';
+import { Place } from 'src/schemas/place.schema';
 
 @Injectable()
 export class PlansService {
@@ -153,14 +154,68 @@ export class PlansService {
           dayPlaces.push(availableAccommodations.shift());
         }
 
-        planEntity.itinerary[day].locations = dayPlaces.map((place, index) => ({
-          id: place._id.toString(),
-          name: place.name,
-          source: place.location as [number, number],
-          order: index + 1,
-          image: place.imageUrl,
-          description: place.description,
-        })) as any;
+        // Clear existing locations
+        planEntity.itinerary[day].locations.splice(0, planEntity.itinerary[day].locations.length);
+
+        dayPlaces.forEach((place, index) => {
+          const locationInItinerary: LocationInItinerary = {
+            id: place._id.toString(),
+            name: place.name,
+            source: place.location as [number, number],
+            order: index + 1,
+            image: place.imageUrl,
+            description: place.description,
+            startTime: undefined,
+            endTime: undefined,
+            stayMinutes: undefined,
+            openHours: undefined,
+          };
+
+          if ((place as any).type === 'attraction') {
+            locationInItinerary.description = `Entry Fee: ${(place as any).entryFee}฿. ${place.description}`;
+          } else if ((place as any).type === 'restaurant') {
+            locationInItinerary.startTime = (place as any).openingHours;
+            locationInItinerary.endTime = (place as any).closingHours;
+
+            const parseTimeToMinutes = (timeString: string) => {
+              if (!timeString) return null;
+              const [hours, minutes] = timeString.split(':').map(Number);
+              return hours * 60 + minutes;
+            };
+
+            const startMinutes = parseTimeToMinutes(locationInItinerary.startTime);
+            const endMinutes = parseTimeToMinutes(locationInItinerary.endTime);
+
+            if (startMinutes !== null && endMinutes !== null) {
+              const totalMinutes = endMinutes - startMinutes;
+              const hours = Math.floor(totalMinutes / 60);
+              const minutes = totalMinutes % 60;
+              if (hours > 0 && minutes > 0) {
+                locationInItinerary.openHours = `${hours}h ${minutes}m`;
+              } else if (hours > 0) {
+                locationInItinerary.openHours = `${hours}h`;
+              } else if (minutes > 0) {
+                locationInItinerary.openHours = `${minutes}m`;
+              } else {
+                locationInItinerary.openHours = undefined;
+              }
+            } else {
+              locationInItinerary.openHours = undefined; // Ensure openHours is set to undefined if calculation fails
+            }
+
+            locationInItinerary.description = `Cuisine: ${(place as any).cuisineType}. Contact: ${(place as any).contactInfo}. ${place.description}`;
+          } else if ((place as any).type === 'accommodation') {
+            locationInItinerary.description = `Facilities: ${(place as any).facilities.join(', ')}. Star Rating: ${(place as any).starRating}. Redirect: ${(place as any).redirectUrl || 'N/A'}. ${place.description}`;
+          }
+          planEntity.itinerary[day].locations.push(locationInItinerary);
+        });
+
+        // Mock travel times between locations for the current day
+        planEntity.itinerary[day].travelTimes = [];
+        for (let i = 0; i < dayPlaces.length - 1; i++) {
+          const travelTimeMinutes = Math.floor(Math.random() * 30) + 5; // Random time between 5 and 35 minutes
+          planEntity.itinerary[day].travelTimes.push(travelTimeMinutes);
+        }
       });
     };
 

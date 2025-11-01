@@ -12,17 +12,19 @@ export const mockIsanPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['national park', 'nature', 'adventure'],
     type: 'attraction',
+    entryFee: 400, // Example entry fee for foreigners
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3702'),
     name: 'ปราสาทหินพิมาย',
     imageUrl:
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/%E0%B8%9B%E0%B8%A3%E0%B8%B2%E0%B8%AA%E0%B8%B2%E0%B8%97%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%98%E0%B8%B2%E0%B8%99_%E0%B8%AD%E0%B8%B8%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%A8%E0%B8%B2%E0%B8%AA%E0%B8%95%E0%B8%A3%E0%B9%8C%E0%B8%9E%E0%B8%B4%E0%B8%A1%E0%B8%B2%E0%B8%A2.jpg/1200px-%E0%B8%9B%E0%B8%A3%E0%B8%B2%E0%B8%AA%E0%B8%B2%E0%B8%97%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%98%E0%B8%B2%E0%B8%99_%E0%B8%AD%E0%B8%B8%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%A8%E0%B8%B2%E0%B8%AA%E0%B8%95%E0%B8%A3%E0%B9%8C%E0%B8%9E%E0%B8%B4%E0%B8%A1%E0%B8%B2%E0%B8%A2.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/%E0%B8%9B%E0%B8%A3%E0%B8%B2%E0%B8%AA%E0%B8%B2%E0%B8%97%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%A8%E0%B8%B2%E0%B8%AA%E0%B8%95%E0%B8%A3%E0%B9%8C%E0%B8%9E%E0%B8%B4%E0%B8%A1%E0%B8%B2%E0%B8%A2.jpg/1200px-%E0%B8%9B%E0%B8%A3%E0%B8%B2%E0%B8%AA%E0%B8%B2%E0%B8%97%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%A8%E0%B8%B2%E0%B8%AA%E0%B8%95%E0%B8%A3%E0%B9%8C%E0%B8%9E%E0%B8%B4%E0%B8%A1%E0%B8%B2%E0%B8%A2.jpg',
     location: [15.2200177, 102.4915711],
     description: 'ปราสาทหินทรายสีขาวที่ใหญ่และงดงามที่สุดแห่งหนึ่งในประเทศไทย',
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['historical', 'temple', 'culture'],
     type: 'attraction',
+    entryFee: 100, // Example entry fee
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3703'),
@@ -34,6 +36,7 @@ export const mockIsanPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['nature', 'unseen', 'river'],
     type: 'attraction',
+    entryFee: 0,
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3704'),
@@ -45,6 +48,10 @@ export const mockIsanPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['food', 'local food', 'restaurant'],
     type: 'restaurant',
+    openingHours: "10:00:00",
+    closingHours: "20:00:00",
+    cuisineType: "Isan",
+    contactInfo: "045-123-4567",
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3705'),
@@ -56,6 +63,9 @@ export const mockIsanPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['hotel', 'luxury', 'accommodation'],
     type: 'accommodation',
+    facilities: ["pool", "wifi", "restaurant", "gym"],
+    starRating: 4,
+    redirectUrl: "https://www.theheritagekorat.com/",
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3706'),
@@ -67,6 +77,10 @@ export const mockIsanPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['food', 'local food', 'restaurant'],
     type: 'restaurant',
+    openingHours: "11:00:00",
+    closingHours: "22:00:00",
+    cuisineType: "Isan Fusion",
+    contactInfo: "081-987-6543",
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3707'),
@@ -78,5 +92,8 @@ export const mockIsanPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['hotel', 'resort', 'nature', 'accommodation'],
     type: 'accommodation',
+    facilities: ["pool", "garden", "wifi"],
+    starRating: 3,
+    redirectUrl: "https://www.thepianoresort.com/",
   },
 ];

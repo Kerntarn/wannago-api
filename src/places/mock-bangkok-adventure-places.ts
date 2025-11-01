@@ -10,6 +10,7 @@ export const mockBangkokAdventurePlaces: any[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["zoo", "adventure", "family", "nature"],
     type: "attraction",
+    entryFee: 700,
   },
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3902"),
@@ -20,6 +21,7 @@ export const mockBangkokAdventurePlaces: any[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["nature", "cycling", "park"],
     type: "attraction",
+    entryFee: 0,
   },
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3903"),
@@ -30,6 +32,7 @@ export const mockBangkokAdventurePlaces: any[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["market", "food", "nature", "adventure"],
     type: "attraction",
+    entryFee: 0,
   },
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3904"),
@@ -40,6 +43,10 @@ export const mockBangkokAdventurePlaces: any[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["food", "restaurant", "nature"],
     type: "restaurant",
+    openingHours: "17:00:00",
+    closingHours: "23:00:00",
+    cuisineType: "Thai",
+    contactInfo: "02-123-4567",
   },
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3905"),
@@ -50,8 +57,11 @@ export const mockBangkokAdventurePlaces: any[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["hotel", "luxury", "accommodation"],
     type: "accommodation",
+    facilities: ["pool", "spa", "wifi"],
+    starRating: 5,
+    redirectUrl: "https://www.kempinski.com/en/bangkok/siam-hotel/",
   },
-    {
+  {
     _id: new Types.ObjectId("65275a5e3620e67160ad3906"),
     name: "The Raft Cafe & Restaurant",
     imageUrl: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/83/ba/a4/quelques-photos-de-la.jpg?w=600&h=400&s=1",
@@ -60,6 +70,10 @@ export const mockBangkokAdventurePlaces: any[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["food", "restaurant", "cafe", "nature"],
     type: "restaurant",
+    openingHours: "10:00:00",
+    closingHours: "22:00:00",
+    cuisineType: "Cafe & Thai",
+    contactInfo: "089-123-4567",
   },
   {
     _id: new Types.ObjectId("65275a5e3620e67160ad3907"),
@@ -70,6 +84,8 @@ export const mockBangkokAdventurePlaces: any[] = [
     providerId: new Types.ObjectId("65275a5e3620e67160ad3001"),
     tags: ["hotel", "resort", "luxury", "accommodation"],
     type: "accommodation",
-  }
+    facilities: ["pool", "spa", "river view"],
+    starRating: 5,
+    redirectUrl: "https://www.anantara.com/en/riverside-bangkok",
+  },
 ];
-

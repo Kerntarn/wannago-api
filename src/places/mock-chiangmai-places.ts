@@ -12,6 +12,7 @@ export const mockChiangmaiPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['temple', 'culture', 'mountain', 'landmark'],
     type: 'attraction',
+    entryFee: 30, // Example entry fee
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3802'),
@@ -23,6 +24,7 @@ export const mockChiangmaiPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['market', 'shopping', 'food'],
     type: 'attraction',
+    entryFee: 0,
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3803'),
@@ -34,6 +36,10 @@ export const mockChiangmaiPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['food', 'local food', 'restaurant'],
     type: 'restaurant',
+    openingHours: "08:00:00",
+    closingHours: "17:00:00",
+    cuisineType: "Northern Thai",
+    contactInfo: "053-123-4567",
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3804'),
@@ -45,6 +51,7 @@ export const mockChiangmaiPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['national park', 'nature', 'mountain', 'adventure'],
     type: 'attraction',
+    entryFee: 300, // Example entry fee for foreigners, local might be different
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3805'),
@@ -56,6 +63,10 @@ export const mockChiangmaiPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['food', 'local food', 'restaurant'],
     type: 'restaurant',
+    openingHours: "17:00:00",
+    closingHours: "22:00:00",
+    cuisineType: "Northern Thai",
+    contactInfo: "053-987-6543",
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3806'),
@@ -67,6 +78,9 @@ export const mockChiangmaiPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['hotel', 'luxury', 'accommodation'],
     type: 'accommodation',
+    facilities: ["pool", "spa", "gym", "restaurant"],
+    starRating: 5,
+    redirectUrl: "https://www.shangri-la.com/chiangmai/shangrila/",
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3807'),
@@ -78,6 +92,10 @@ export const mockChiangmaiPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['food', 'local food', 'restaurant'],
     type: 'restaurant',
+    openingHours: "11:00:00",
+    closingHours: "21:00:00",
+    cuisineType: "Northern Thai",
+    contactInfo: "098-765-4321",
   },
   {
     _id: new Types.ObjectId('65275a5e3620e67160ad3808'),
@@ -89,5 +107,8 @@ export const mockChiangmaiPlaces: any[] = [
     providerId: new Types.ObjectId('65275a5e3620e67160ad3001'),
     tags: ['hotel', 'modern', 'accommodation'],
     type: 'accommodation',
+    facilities: ["pool", "wifi", "cafe"],
+    starRating: 4,
+    redirectUrl: "https://www.unimmanchiangmai.com/",
   },
 ];
