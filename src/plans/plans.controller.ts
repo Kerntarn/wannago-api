@@ -52,10 +52,13 @@ export class PlansController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('jwt')
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth('jwt')
   async findOne(@Param('id') id: string, @CurrentUser() user: User) {
-    console.log('here');
+    if (!user) {
+      return this.plansService.findOne(id);
+    }
+
     return await this.plansService.findOne(id, user._id);
   }
 
