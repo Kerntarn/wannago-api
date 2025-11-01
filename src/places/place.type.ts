@@ -5,4 +5,8 @@ export class PlaceUserType {
     location: number[];
     description: string;
     type: string;
+    startTime?: Date;
+    endTime?: Date;
+    openHours?: string;
+    stayMin?: number;
 }

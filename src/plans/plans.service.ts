@@ -170,44 +170,16 @@ export class PlansService {
             order: index + 1,
             image: place.imageUrl,
             description: place.description,
-            startTime: undefined,
-            endTime: undefined,
-            stayMinutes: undefined,
-            openHours: undefined,
+            startTime: place.startTime,
+            endTime: place.endTime,
+            stayMinutes: place.stayMin,
+            openHours: undefined, // Will be calculated below if restaurant
           };
 
           if ((place as any).type === 'attraction') {
             locationInItinerary.description = `Entry Fee: ${(place as any).entryFee}฿. ${place.description}`;
           } else if ((place as any).type === 'restaurant') {
-            locationInItinerary.startTime = (place as any).openingHours;
-            locationInItinerary.endTime = (place as any).closingHours;
-
-            const parseTimeToMinutes = (timeString: string) => {
-              if (!timeString) return null;
-              const [hours, minutes] = timeString.split(':').map(Number);
-              return hours * 60 + minutes;
-            };
-
-            const startMinutes = parseTimeToMinutes(locationInItinerary.startTime);
-            const endMinutes = parseTimeToMinutes(locationInItinerary.endTime);
-
-            if (startMinutes !== null && endMinutes !== null) {
-              const totalMinutes = endMinutes - startMinutes;
-              const hours = Math.floor(totalMinutes / 60);
-              const minutes = totalMinutes % 60;
-              if (hours > 0 && minutes > 0) {
-                locationInItinerary.openHours = `${hours}h ${minutes}m`;
-              } else if (hours > 0) {
-                locationInItinerary.openHours = `${hours}h`;
-              } else if (minutes > 0) {
-                locationInItinerary.openHours = `${minutes}m`;
-              } else {
-                locationInItinerary.openHours = undefined;
-              }
-            } else {
-              locationInItinerary.openHours = undefined; // Ensure openHours is set to undefined if calculation fails
-            }
-
+            locationInItinerary.openHours = (place as any).openHours;
             locationInItinerary.description = `Cuisine: ${(place as any).cuisineType}. Contact: ${(place as any).contactInfo}. ${place.description}`;
           } else if ((place as any).type === 'accommodation') {
             locationInItinerary.description = `Facilities: ${(place as any).facilities.join(', ')}. Star Rating: ${(place as any).starRating}. Redirect: ${(place as any).redirectUrl || 'N/A'}. ${place.description}`;

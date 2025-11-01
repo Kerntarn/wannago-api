@@ -1,8 +1,6 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { asyncWrapProviders } from 'async_hooks';
 import { Model, ObjectId } from 'mongoose';
-import { UpdatePlaceDto } from 'src/places/dtos/place.dto';
 import { Place, PlaceDocument } from 'src/schemas/place.schema';
 import { User } from 'src/schemas/user.schema';
 import { TagsService } from 'src/tags/tags.service';
@@ -116,9 +114,6 @@ export class PlacesService {
   }
 
   async remove(id: string, curUserId: ObjectId) {
-    // if (this.useMockData) {
-    //   throw new Error('Remove operation not supported with mock data');
-    // }
     const deleted = await this.placeModel.findOneAndDelete({ _id: id, providerId: curUserId }).exec();
     if (!deleted) {
       throw new NotFoundException(`Place with ID ${id} not found or not owned by user`);

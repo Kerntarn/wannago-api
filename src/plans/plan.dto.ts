@@ -126,8 +126,17 @@ export class UpdatePlanDto {
 
 
 class PlaceWithTime extends PartialType(Place) {
-    startTime: Date;
-    endTime: Date;
+    @ApiProperty({ example: "10:00", description: "Start time for the location in HH:mm format" })
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date)
+    startTime?: Date;
+
+    @ApiProperty({ example: "12:00", description: "End time for the location in HH:mm format" })
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date)
+    endTime?: Date;
 }
 
 class Itinerary {
