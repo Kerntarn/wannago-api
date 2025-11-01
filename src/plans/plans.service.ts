@@ -53,12 +53,12 @@ export class PlansService {
     return this.planModel.find().exec();
   }
 
-  async findOne(id: string, curUserId: ObjectId) {
-    console.log(id);
+  async findOne(id: string, curUserId?: ObjectId) {
+    // console.log(id);
     const plan = await this.planModel.findById(id).exec();
-    let isOwner = true;
-    if (plan.ownerId.toString() !== curUserId.toString()) {
-        isOwner = false;
+    let isOwner = false;
+    if (curUserId && plan.ownerId.toString() === curUserId.toString()) {
+        isOwner = true;
     }
 
     return { plan, isOwner };
