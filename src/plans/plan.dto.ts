@@ -58,17 +58,22 @@ export class CreatePlanDto {
   endDate?: string;
 
   @ApiProperty({
-    example: [100.5018, 13.7563],
-    description: 'Give me longitude and latitude of source',
-    type: [Number],
+    example: 'https://maps.app.goo.gl/your-location OR [100.5018, 13.7563]',
+    description:
+      'URL of the source location (e.g., from Google Maps) or an array of [longitude, latitude]',
+    required: false,
+    oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'number' } }],
+  })
+  @IsOptional()
+  source: any;
+
+  @ApiProperty({
+    example: true,
+    description: 'Set to true if the source represents the user\'s current location and should be used to determine the "where" field automatically if it\'s a hotel.',
     required: false,
   })
   @IsOptional()
-  @IsArray()
-  @IsNumber({}, { each: true })
-  @ArrayMinSize(2, { message: 'Give me longitude and latitude of source' })
-  @ArrayMaxSize(2, { message: 'Give me longitude and latitude of source' })
-  source: number[];
+  isCurrentLocationHotel?: boolean;
 }
 
 export class UpdatePlanDto {

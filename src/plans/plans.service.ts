@@ -87,18 +87,46 @@ export class PlansService {
     const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
     const endDate = dto.endDate
       ? new Date(dto.endDate)
-      : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000); 
+      : new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000);
 
+    let sourceCoordinates: [number, number] | undefined;
+    if (dto.source) {
+      if (typeof dto.source === 'string') {
+        try {
+          sourceCoordinates = await this.placesService.getCoordinates(dto.source);
+        } catch (error) {
+          throw new BadRequestException('Invalid source URL');
+        }
+      } else if (Array.isArray(dto.source) && dto.source.length === 2) {
+        sourceCoordinates = dto.source as [number, number];
+      } else {
+        throw new BadRequestException(
+          'Invalid source format. Must be a URL string or a [longitude, latitude] array.',
+        );
+      }
+    }
+
+    let planWhere = dto.where;
+    if (dto.isCurrentLocationHotel && sourceCoordinates) {
+      const nearbyPlaces = await this.placesService.findNearbyPlaces(sourceCoordinates, 1);
+      const accommodation = nearbyPlaces.find(
+        (place) => (place as any).type === 'accommodation',
+      );
+      if (accommodation) {
+        planWhere = accommodation.name;
+      }
+    }
+ 
     const planEntity: Partial<Plan> = {
-      title: `ทริป ${dto.where || 'ไร้ชื่อ'}`,
-      where: dto.where,
+      title: `ทริป ${planWhere || 'ไร้ชื่อ'}`,
+      where: planWhere,
       category: dto.category,
       budget: dto.budget,
       transportation: dto.transportation,
       people: dto.people,
       startDate: startDate,
       endDate: endDate,
-      source: dto.source,
+      source: sourceCoordinates,
       itinerary: {},
     };
 
