@@ -25,14 +25,6 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 @Controller('plans')
 export class PlansController {
   constructor(private readonly plansService: PlansService) {}
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('jwt')
-  @Post()
-  create(@Body() createPlanDto: CreatePlanDto, @CurrentUser() user: User) {
-    return this.plansService.create(createPlanDto, user._id.toString());
-  }
-
   
   @UseGuards(GuestAuthGuard)
   @ApiBearerAuth('guest-jwt')
